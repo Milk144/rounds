@@ -68,7 +68,9 @@
   header{display:flex;align-items:center;gap:12px;margin:4px 0 22px;flex-wrap:wrap}
   /* on the iPod screen the only thing left in the header is the wordmark,
      and the iPod is centred, so left-aligning it looks like a mistake */
-  body[data-screen="round"] header{justify-content:center;margin-bottom:16px}
+  body[data-screen="round"] header{justify-content:center;margin-bottom:18px}
+  /* sized against the iPod below it — ~280px of wordmark over a 340px body */
+  body[data-screen="round"] h1{font-size:min(46px,13vw)}
   body[data-screen="round"] header .spacer{display:none}
   h1{font-size:28px;margin:0;letter-spacing:.02em;line-height:1.2}
   header .sub{color:var(--mute);font-size:12px}
