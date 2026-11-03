@@ -87,7 +87,7 @@
   .btn.primary:hover{background:#FFD75E}
   .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:4px 4px 0 var(--ink)}
   .btn:disabled:active{transform:none;box-shadow:4px 4px 0 var(--ink)}
-  .btn.lg{font-size:16px;padding:14px 24px}
+  .btn.lg{font-size:16px;padding:14px 24px;text-transform:uppercase}
 
   .panel{
     background:var(--panel);border:3px solid var(--ink);
@@ -98,7 +98,7 @@
   .panel .warn{color:#FFE3E3}
   .panel h2{
     font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.06em;
-    margin:0 0 14px;color:var(--ink);
+    margin:0 0 14px;color:var(--ink);text-transform:uppercase;
   }
 
   /* ---------- style picker ---------- */
@@ -133,7 +133,7 @@
 
   /* ---------- timing ---------- */
   .lenrow{display:flex;flex-wrap:wrap;gap:9px;align-items:center;font-size:12.5px}
-  .lenrow .lbl{width:60px}
+  .lenrow .lbl{width:60px;text-transform:uppercase}
   .len{
     background:var(--fill);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
     padding:6px 13px;font-family:"Silkscreen",monospace;font-size:13px;
@@ -243,10 +243,13 @@
     padding:11px 13px 9px;
     min-height:0;display:flex;flex-direction:column;
   }
+  .dance-name,.dance-sub{text-transform:uppercase}
+  .sub,.plain-only{display:none}
+  .style-card .bar{display:none}
   .scr-top{
     display:flex;justify-content:space-between;align-items:center;
     font-family:"Press Start 2P",monospace;font-size:7px;letter-spacing:.06em;
-    color:var(--pink);margin-bottom:8px;
+    color:var(--pink);margin-bottom:8px;text-transform:uppercase;
   }
   .scr-mid{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
   .dance-name{
@@ -311,7 +314,7 @@
   .player-wrap{width:300px;max-width:94vw}
   .player-wrap .cap{
     font-family:"Press Start 2P",monospace;font-size:7px;color:var(--mute);
-    letter-spacing:.08em;margin-bottom:7px;text-align:center;
+    letter-spacing:.08em;margin-bottom:7px;text-align:center;text-transform:uppercase;
   }
   #yt,#yt2{border:3px solid var(--ink);background:#000;min-height:200px;display:block}
 
@@ -361,80 +364,145 @@
   .plain-only{display:none}
 
   /* ======================================================================
-     "I HATE FUN" — the pre-pixel look. It's an override layer rather than a
-     second stylesheet, so the markup is identical in both modes: the iPod's
-     nested boxes flatten to plain text and the click wheel unrolls into a
-     row of buttons.
+     "I HATE FUN" — the look this started as, restored from the first commit
+     rather than from memory. It is an override layer keyed off one class on
+     <body>, so both themes share the markup: the iPod's nested boxes flatten
+     to centred text and the click wheel unrolls into a row of buttons.
      ====================================================================== */
   body.plain{
-    --ink:#f2f3f5; --bg:#0c0d10; --paper:#16181d; --paper-2:#1d2026;
-    --fill:#1d2026; --panel:#16181d; --on-panel:#9aa1ad; --mute:#9aa1ad;
-    --card:#1d2026; --yellow:#e4b363; --purple:#8a6c3b;
-    --line:#2a2e37;
+    --bg:#0c0d10; --panel:#16181d; --panel-2:#1d2026; --line:#2a2e37;
+    --ink:#f2f3f5; --mute:#9aa1ad; --accent:#e4b363; --accent-dim:#8a6c3b;
+    --good:#6fcf97; --bad:#eb5757;
+    --latin:#e4617b; --rhythm:#e4b363; --standard:#6aa6e8; --smooth:#9b7fe0;
+    --fill:var(--panel-2); --card:var(--panel); --on-panel:var(--mute);
     background:var(--bg);color:var(--ink);
     font:16px/1.5 ui-sans-serif,-apple-system,"SF Pro Text",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
   body.plain *{font-family:inherit!important}
   body.plain svg{shape-rendering:auto}
+  body.plain .plain-only{display:inline}
+  body.plain .pixel-only,body.plain .fun-toggle .skull{display:none}
+  body.plain .sub{display:inline;color:var(--mute);font-size:13px}
+  body.plain .dance-name,body.plain .dance-sub,
+  body.plain .track,body.plain .upnext{text-transform:none}
 
-  body.plain .panel,body.plain .btn,body.plain .chip,body.plain .len,
-  body.plain input,body.plain textarea,body.plain .style-card,
-  body.plain .banner,body.plain .chk-list{
-    box-shadow:none;border:1px solid var(--line);border-radius:10px;
-  }
-  body.plain .btn:active,body.plain .chip:active,body.plain .len:active,
-  body.plain .style-card:active{transform:none}
-
-  body.plain header{justify-content:flex-start;margin-bottom:22px}
+  body.plain .wrap{max-width:860px;padding:16px 16px 48px}
+  body.plain header{align-items:baseline;gap:12px;margin:8px 0 22px;justify-content:flex-start}
   body.plain header .spacer{display:block}
   body.plain h1,body.plain[data-screen="round"] h1{
     font-size:20px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
   }
-  body.plain .panel{background:var(--panel);border-radius:14px;padding:16px 18px}
+
+  body.plain .btn{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    box-shadow:none;padding:9px 14px;font-size:14px;color:var(--ink);
+    transition:background .12s,border-color .12s;
+  }
+  body.plain .btn:hover{background:#262a32;border-color:#3a3f4a}
+  body.plain .btn:active{transform:none}
+  body.plain .btn.primary{background:var(--accent);color:#1a1405;border-color:var(--accent);font-weight:600}
+  body.plain .btn.primary:hover{background:#efc478}
+  body.plain .btn:disabled{opacity:.4}
+  body.plain .btn.lg{padding:16px 28px;font-size:17px;border-radius:12px;text-transform:none}
+
+  body.plain .styles{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:22px}
+  body.plain .style-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:none;padding:14px 16px;position:relative;overflow:hidden;
+  }
+  body.plain .style-card:hover{border-color:#3a3f4a}
+  body.plain .style-card:active{transform:none}
+  body.plain .style-card.on{
+    border-color:var(--c);
+    background:linear-gradient(180deg,color-mix(in srgb,var(--c) 11%,var(--panel)),var(--panel));
+  }
+  body.plain .style-card .bar{
+    display:block;position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);opacity:.5;
+  }
+  body.plain .style-card.on .bar{opacity:1}
+  body.plain .style-card .name{font-size:17px;font-weight:600;letter-spacing:.04em}
+  body.plain .style-card .meta{color:var(--mute);font-size:12.5px;margin-top:3px;opacity:1}
+
+  body.plain .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:none;padding:16px 18px;margin-bottom:14px;
+  }
   body.plain .panel h2{
     font-size:12px;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--mute);font-weight:600;
+    color:var(--mute);margin:0 0 12px;font-weight:600;
   }
+  body.plain .lenrow .lbl{text-transform:none}
   body.plain .panel .hint,body.plain .panel .lbl,
   body.plain .panel .unit,body.plain .panel .plname{color:var(--mute)}
-  body.plain .panel .warn{color:#eb5757}
-  body.plain .btn{background:var(--paper-2);color:var(--ink);font-size:14px;padding:9px 14px}
-  body.plain .btn:hover{background:#262a32}
-  body.plain .btn.primary{background:var(--yellow);color:#1a1405;border-color:var(--yellow);font-weight:600}
-  body.plain .btn.lg{font-size:17px;padding:16px 28px;border-radius:12px}
+  body.plain .panel .warn{color:var(--bad)}
+  body.plain .hint{font-size:12.5px;margin-top:10px}
+  body.plain .warn{font-size:13px;margin-top:10px}
+  body.plain .start-row{gap:12px;margin-top:18px}
 
-  body.plain .style-card{background:var(--panel);border-radius:14px}
-  body.plain .style-card.on{background:#1f2129;border-color:var(--yellow)}
-  body.plain .style-card .name{font-size:17px;font-weight:600;letter-spacing:.04em}
-  body.plain .style-card .meta{color:var(--mute);opacity:1;font-size:12.5px}
-  body.plain .style-card.on .meta{color:var(--mute)}
-
-  body.plain .chip{background:var(--paper-2);border-radius:999px;padding:7px 14px 7px 11px;font-size:14px}
-  body.plain .chip.off{background:var(--paper-2);color:var(--mute);opacity:.45}
-  body.plain .chip .dot{width:7px;height:7px;border-radius:50%;background:#6fcf97}
+  body.plain .dances{gap:8px}
+  body.plain .chip{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:999px;
+    box-shadow:none;padding:7px 14px 7px 11px;font-size:14px;color:var(--ink);
+  }
+  body.plain .chip:active{transform:none}
+  body.plain .chip.off{background:var(--panel-2);color:var(--ink);opacity:.42}
+  body.plain .chip.missing{border-color:var(--bad)}
+  body.plain .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
   body.plain .chip.off .dot{background:var(--mute)}
-  body.plain .chip.missing .dot{background:#eb5757}
+  body.plain .chip.missing .dot{background:var(--bad)}
   body.plain .chip .tempo,body.plain .chip.off .tempo{color:var(--mute);font-size:11.5px}
-  body.plain .len{background:var(--paper-2);border-radius:9px}
-  body.plain .len.on{background:var(--yellow);color:#1a1405;border-color:var(--yellow);font-weight:600}
-  body.plain input,body.plain textarea{background:var(--paper-2);color:var(--ink);border-radius:9px}
-  body.plain input:focus{background:var(--paper-2);border-color:#8a6c3b}
-  body.plain .pl-row input.ok{background:var(--paper-2);border-color:#8a6c3b}
-  body.plain .banner{background:#2a1d1d;border-color:#58343a;border-radius:12px}
-  body.plain .banner b{color:var(--yellow);font-size:13px;text-transform:none;letter-spacing:0}
-  body.plain .banner code{background:#140f10;color:#9BE8A8;border-radius:6px}
 
-  /* ---- the iPod flattens back to plain text ---- */
+  body.plain .lenrow{gap:8px}
+  body.plain .len{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    box-shadow:none;padding:8px 16px;font-variant-numeric:tabular-nums;
+  }
+  body.plain .len:active{transform:none}
+  body.plain .len.on{background:var(--accent);color:#1a1405;border-color:var(--accent);font-weight:600}
+  body.plain input[type=number],body.plain input[type=text],body.plain textarea{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    color:var(--ink);padding:8px 10px;font-size:14px;
+  }
+  body.plain input[type=number]{width:74px;text-align:center;font-variant-numeric:tabular-nums}
+  body.plain input:focus{background:var(--panel-2);border-color:var(--accent-dim)}
+  body.plain .pl-row input.ok{background:var(--panel-2);border-color:var(--accent-dim)}
+  body.plain textarea{
+    min-height:120px;border-radius:10px;padding:10px;
+    font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace!important;margin-top:10px;
+  }
+  body.plain .pl-row{grid-template-columns:200px 1fr;gap:10px;margin-bottom:8px}
+  body.plain .pl-row label{font-size:13.5px}
+  body.plain .pl-row label .plname{
+    font:12px ui-monospace,SFMono-Regular,Menlo,monospace!important;display:block;
+  }
+  body.plain .setup-style h3{
+    font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+    margin:18px 0 10px;color:var(--c);background:none;border:none;padding:0;display:block;
+  }
+  body.plain .io{gap:10px;margin-top:16px}
+  body.plain .banner{
+    background:#2a1d1d;border:1px solid #58343a;border-radius:12px;box-shadow:none;
+    font-size:13.5px;line-height:1.55;
+  }
+  body.plain .banner b{
+    color:var(--accent);font-size:13.5px;text-transform:none;letter-spacing:0;display:block;
+  }
+  body.plain .banner code{background:#140f10;border:1px solid #58343a;border-radius:6px;color:#9BE8A8}
+
+  /* ---- the iPod flattens back to centred text ---- */
   body.plain .nub,body.plain .scr-ico{display:none}
-  body.plain .ipod-wrap{width:100%;max-width:560px}
+  body.plain #round{text-align:center;padding-top:10px}
+  body.plain .ipod-wrap{width:100%;max-width:none}
   body.plain .ipod,body.plain .ipod-face,
   body.plain .screen,body.plain .screen-face{
-    background:none;padding:0;margin:0;filter:none;clip-path:none;min-height:0;
+    background:none;padding:0;margin:0;filter:none;min-height:0;border:none;
   }
-  body.plain .screen-face{display:block;text-align:center}
+  body.plain .notched,body.plain .px-circle,body.plain .px-circle-sm{clip-path:none}
+  body.plain .screen-face{display:block}
   body.plain .scr-top{
-    justify-content:center;color:var(--mute);font-size:12.5px;
-    letter-spacing:.16em;text-transform:uppercase;margin-bottom:0;
+    display:block;color:var(--mute);font-size:12.5px;letter-spacing:.16em;
+    text-transform:uppercase;margin-bottom:0;
   }
   body.plain .dance-name{
     font-size:clamp(38px,11vw,72px);font-weight:600;letter-spacing:-.01em;
@@ -442,32 +510,29 @@
   }
   body.plain .dance-sub{color:var(--mute);font-size:13.5px;min-height:20px;letter-spacing:0}
   body.plain .clock{
-    font-size:clamp(52px,16vw,96px);font-weight:300;color:var(--ink);
-    margin:16px 0 4px;letter-spacing:.01em;
+    font-size:clamp(52px,16vw,96px);font-weight:300;font-variant-numeric:tabular-nums;
+    letter-spacing:.01em;margin:16px 0 4px;line-height:1;color:var(--ink);
   }
-  body.plain .clock.fading{color:var(--yellow)}
+  body.plain .clock.fading{color:var(--accent)}
   body.plain .progress{
-    height:4px;background:var(--paper-2);border:none;border-radius:99px;
-    max-width:460px;margin:14px auto 0;
+    height:4px;background:var(--panel-2);border:none;border-radius:99px;
+    margin:14px auto 0;max-width:460px;
   }
-  body.plain .progress i{background:var(--yellow)}
+  body.plain .progress i{background:var(--accent)}
   body.plain .scr-bot{margin-top:0}
   body.plain .track{color:var(--mute);font-size:13px;margin-top:16px;min-height:19px}
-  body.plain .upnext{color:var(--mute);font-size:13px;min-height:19px;letter-spacing:0}
-  body.plain .pips{margin-top:22px}
-  body.plain .pip{width:34px;height:3px;border-radius:99px;background:var(--paper-2)}
-  body.plain .pip.done{background:#8a6c3b}
-  body.plain .pip.now{background:var(--yellow)}
+  body.plain .upnext{color:var(--mute);font-size:13px;margin-top:6px;min-height:19px;letter-spacing:0}
+  body.plain .pips{gap:6px;margin-top:22px}
+  body.plain .pip{width:34px;height:3px;border-radius:99px;background:var(--panel-2)}
+  body.plain .pip.done{background:var(--accent-dim)}
+  body.plain .pip.now{background:var(--accent)}
 
-  /* ---- the click wheel unrolls into a button row ---- */
+  /* ---- the click wheel unrolls into the original row of controls ---- */
   body.plain .wheel{
-    width:auto;height:auto;aspect-ratio:auto;background:none;
-    padding:0;margin:26px 0 0;
+    width:auto;height:auto;aspect-ratio:auto;background:none;padding:0;margin:26px 0 0;
   }
-  /* every pixel-grid circle and staircase corner is dropped in plain mode */
-  body.plain .notched,body.plain .px-circle,body.plain .px-circle-sm{clip-path:none}
   body.plain .wheel-face{
-    position:static;width:auto;height:auto;background:none;clip-path:none;
+    position:static;width:auto;height:auto;background:none;
     display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
   }
   body.plain .wbtn,body.plain .wcenter{
@@ -476,29 +541,29 @@
   }
   body.plain .wbtn br,body.plain .wcenter-face br,
   body.plain .wbtn .ico,body.plain .wcenter-face svg{display:none}
-  body.plain .wbtn,body.plain .wcenter-face{white-space:nowrap}
   body.plain .wbtn,body.plain .wcenter-face{
-    display:inline-flex;flex-direction:row;align-items:center;gap:0;
-    background:var(--paper-2);border:1px solid var(--line);border-radius:10px;
+    display:inline-flex;flex-direction:row;align-items:center;gap:0;white-space:nowrap;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
     padding:9px 14px;font-size:14px;color:var(--ink);
     letter-spacing:0;text-transform:none;line-height:1.5;
   }
   body.plain .wcenter-face{width:auto;height:auto}
-  body.plain .wbtn:hover,body.plain .wcenter:hover .wcenter-face{background:#262a32;color:var(--ink)}
+  body.plain .wbtn:hover,body.plain .wcenter:hover .wcenter-face{
+    background:#262a32;border-color:#3a3f4a;color:var(--ink);
+  }
   body.plain .wbtn:active,body.plain .wcenter:active{transform:none}
-  body.plain .plain-only{display:inline}
 
+  body.plain .player-wrap{margin:26px auto 0;width:356px;max-width:100%}
   body.plain .player-wrap .cap,body.plain .chk-head .t{
     color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   }
-  body.plain .chk-head .h{color:var(--ink);font-size:17px;font-weight:600}
-  body.plain #yt,body.plain #yt2{border:1px solid var(--line);border-radius:10px}
-  body.plain .chk-list{background:none;border:none;padding:0}
+  body.plain #yt,body.plain #yt2{border:none;border-radius:10px;overflow:hidden;background:#000}
+  body.plain .chk-head .h{color:var(--ink);font-size:17px;font-weight:600;letter-spacing:0}
+  body.plain .chk-list{background:none;border:none;box-shadow:none;padding:0}
   body.plain .chk-row{border-bottom:1px solid var(--line)}
   body.plain .chk-row.now{background:#1a1d23}
-  body.plain .fun-toggle{background:var(--paper-2);color:var(--mute)}
+  body.plain .fun-toggle{background:var(--panel-2);color:var(--mute);border:1px solid var(--line);border-radius:10px;box-shadow:none}
   body.plain .fun-toggle:hover{background:#262a32}
-  body.plain .fun-toggle .skull{display:none}
 
   @media (max-width:620px){
     .pl-row{grid-template-columns:1fr;gap:4px}
@@ -568,6 +633,7 @@
 
   <header>
     <h1 class="pixel">ROUNDS</h1>
+    <span class="sub" id="hdrsub">practice music</span>
     <span class="spacer"></span>
     <button class="btn primary" id="toSetup">Playlists</button>
   </header>
@@ -586,16 +652,16 @@
     <div class="styles" id="styleCards"></div>
 
     <div class="panel">
-      <h2>DANCES <span id="danceCount"></span></h2>
+      <h2>Dances <span id="danceCount"></span></h2>
       <div class="dances" id="danceChips"></div>
       <div class="hint">Tap a dance to leave it out. Order is fixed (collegiate).</div>
       <div class="warn" id="missingWarn" style="display:none"></div>
     </div>
 
     <div class="panel">
-      <h2>TIMING</h2>
+      <h2>Timing</h2>
       <div class="lenrow">
-        <span class="lbl">SONG</span>
+        <span class="lbl">Song</span>
         <button class="len" data-sec="60">1:00</button>
         <button class="len" data-sec="90">1:30</button>
         <button class="len" data-sec="120">2:00</button>
@@ -603,17 +669,17 @@
         <span class="unit">sec</span>
       </div>
       <div class="lenrow" style="margin-top:12px">
-        <span class="lbl">GAP</span>
+        <span class="lbl">Gap</span>
         <input type="number" id="gapSec" min="0" max="120" step="1">
         <span class="unit">sec of beeps</span>
-        <span class="lbl" style="margin-left:18px;width:auto">FADE</span>
+        <span class="lbl" style="margin-left:18px;width:auto">Fade</span>
         <input type="number" id="fadeSec" min="0" max="30" step="1">
         <span class="unit">sec</span>
       </div>
     </div>
 
     <div class="start-row">
-      <button class="btn primary lg" id="startBtn">&#9654; START ROUND</button>
+      <button class="btn primary lg" id="startBtn"><span class="pixel-only">&#9654; </span>Start round</button>
       <span class="hint" id="roundSummary" style="margin:0"></span>
     </div>
   </section>
@@ -649,24 +715,24 @@
          <div class="wheel-face px-circle">
           <button class="wbtn top" id="stopBtn">
             <svg class="ico" viewBox="0 0 11 8" width="17" height="12"><use href="#px-menu" fill="currentColor"/></svg>
-            MENU
+            <span class="pixel-only">MENU</span><span class="plain-only">Stop</span>
           </button>
           <button class="wbtn left" id="prevBtn">
             <svg class="ico" viewBox="0 0 13 9" width="20" height="14"><use href="#px-prev" fill="currentColor"/></svg>
-            PREV <br>DANCE
+            <span class="pixel-only">PREV <br>DANCE</span><span class="plain-only">Prev dance</span>
           </button>
           <button class="wbtn right" id="nextBtn">
             <svg class="ico" viewBox="0 0 13 9" width="20" height="14"><use href="#px-next" fill="currentColor"/></svg>
-            NEXT <br>DANCE
+            <span class="pixel-only">NEXT <br>DANCE</span><span class="plain-only">Next dance</span>
           </button>
           <button class="wbtn bottom" id="pauseBtn">
             <svg class="ico" viewBox="0 0 12 9" width="19" height="14"><use href="#px-playpause" fill="currentColor"/></svg>
-            <span class="plain-only">PLAY / PAUSE</span>
+            <span class="plain-only" id="pauseLabel">Pause</span>
           </button>
           <button class="wcenter px-circle-sm" id="rerollBtn">
            <span class="wcenter-face px-circle-sm">
              <svg viewBox="0 0 7 8" width="11" height="13"><use href="#px-note" fill="currentColor"/></svg>
-             NEW <br>SONG
+             <span class="pixel-only">NEW <br>SONG</span><span class="plain-only">New song</span>
            </span>
           </button>
          </div>
@@ -677,7 +743,7 @@
 
       <div class="ipod-foot">
         <div class="player-wrap">
-          <div class="cap">NOW PLAYING</div>
+          <div class="cap">Now playing</div>
           <div id="yt"></div>
         </div>
       </div>
@@ -687,7 +753,7 @@
   <!-- ============ SETUP ============ -->
   <section id="setup">
     <div class="panel">
-      <h2>PLAYLISTS</h2>
+      <h2>Playlists</h2>
       <div class="hint" style="margin:0 0 6px">
         Paste a YouTube / YouTube Music playlist link (or just its id) per dance.
         Playlists must be public or unlisted &mdash; private ones can&rsquo;t be embedded.
@@ -714,7 +780,7 @@
       <div class="h" id="chkHead">&nbsp;</div>
     </div>
     <div class="player-wrap">
-      <div class="cap">TEST PLAYER</div>
+      <div class="cap">Test player</div>
       <div id="yt2"></div>
     </div>
     <div class="chk-list" id="chkList"></div>
@@ -839,6 +905,8 @@ const fmt = ms => {
 function setPaused(isPaused){
   const ico = $('scrIco');
   if(ico) ico.setAttribute('href', isPaused ? '#px-pause' : '#px-play');
+  // the plain theme labels the button instead, the way the original did
+  $('pauseLabel').textContent = isPaused ? 'Resume' : 'Pause';
 }
 
 /* ======================= YouTube player ======================= */
@@ -1082,8 +1150,8 @@ function beginGap(){
 
 function finishRound(){
   stopRound(true);
-  $('stageLbl').textContent = R.style ? R.style.name.toUpperCase() : '';
-  $('danceName').textContent = 'DONE';
+  $('stageLbl').textContent = R.style ? R.style.name : '';
+  $('danceName').textContent = 'Done';
   $('danceSub').textContent = 'nice round';
   $('clock').textContent = '0:00';
   $('trackName').textContent = '';
@@ -1102,15 +1170,17 @@ function stopRound(keepScreen){
 function paintHeader(isGap){
   const item = R.queue[R.i];
   const next = R.queue[R.i + 1];
-  $('stageLbl').textContent = R.style.name.toUpperCase() + ' ' + (R.i + 1) + '/' + R.queue.length;
+  // Written in title case; the pixel theme uppercases it in CSS, the plain
+  // theme leaves it as the original did.
+  $('stageLbl').textContent = R.style.name + ' · ' + (R.i + 1) + ' of ' + R.queue.length;
   if(isGap){
-    $('danceName').textContent = next ? 'NEXT: ' + next.dance.name.toUpperCase() : 'FINISHING';
-    $('danceSub').textContent = next ? next.dance.tempo + ' MPM' : '';
+    $('danceName').textContent = next ? 'Next: ' + next.dance.name : 'Finishing';
+    $('danceSub').textContent = next ? next.dance.tempo + ' mpm' : '';
     $('upNext').textContent = '';
   }else{
-    $('danceName').textContent = item.dance.name.toUpperCase();
-    $('danceSub').textContent = item.dance.tempo + ' MPM';
-    $('upNext').textContent = next ? 'up next: ' + next.dance.name : 'last dance';
+    $('danceName').textContent = item.dance.name;
+    $('danceSub').textContent = item.dance.tempo + ' mpm';
+    $('upNext').textContent = next ? 'up next · ' + next.dance.name : 'last dance';
   }
   renderPips();
 }
@@ -1171,6 +1241,8 @@ function show(which){
   // display:none rules in the stylesheet and show a blank page.
   for(const id of ['home','round','setup','check']) $(id).style.display = (id === which) ? 'block' : 'none';
   $('toSetup').style.display = (which === 'home') ? '' : 'none';
+  $('hdrsub').textContent = which === 'setup' ? 'setup'
+                          : which === 'check' ? 'checking' : 'practice music';
   $('fileBanner').style.display = (isFile && (which === 'home' || which === 'setup')) ? 'block' : 'none';
   // hearts and sparkles belong to the iPod screen only
   document.body.dataset.screen = which;
@@ -1182,6 +1254,7 @@ $('backBtn').onclick = () => { applyIo(); renderHome(); show('home'); };
 function renderHome(){
   $('styleCards').innerHTML = STYLES.map(s =>
     '<button class="style-card ' + (cfg.style === s.id ? 'on' : '') + '" data-style="' + s.id + '" style="--c:' + s.color + '">' +
+      '<span class="bar"></span>' +
       '<div class="name">' + s.name.toUpperCase() + '</div>' +
       '<div class="meta">' + s.dances.map(d => d.name).join('<br>') + '</div>' +
     '</button>'
@@ -1208,7 +1281,7 @@ function renderHome(){
   });
 
   const on = buildQueue(cfg.style);
-  $('danceCount').textContent = '(' + on.length + '/' + s.dances.length + ')';
+  $('danceCount').textContent = '(' + on.length + ' of ' + s.dances.length + ')';
   const miss = on.filter(x => !x.listId);
   $('missingWarn').style.display = miss.length ? '' : 'none';
   if(miss.length) $('missingWarn').textContent =
@@ -1223,7 +1296,7 @@ function renderHome(){
 
   const total = on.length * cfg.songSec + Math.max(0, on.length - 1) * cfg.gapSec;
   $('roundSummary').textContent = on.length
-    ? on.length + ' dances, about ' + Math.round(total/60) + ' min'
+    ? on.length + ' dances · about ' + Math.round(total/60) + ' min'
     : 'nothing selected';
   $('startBtn').disabled = !on.length || !!miss.length;
 }
