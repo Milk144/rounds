@@ -236,6 +236,7 @@
       <div id="setupList"></div>
       <div class="io">
         <button class="btn" id="checkBtn">Check playlists</button>
+        <button class="btn" id="resetBtn">Reset to defaults</button>
         <button class="btn" id="ioToggle">Copy / paste settings</button>
         <button class="btn" id="backBtn">Done</button>
       </div>
@@ -301,17 +302,50 @@ const slotKey   = (sid, did) => sid + ':' + did;
 // The playlist name Mikayla uses, e.g. "*LATIN: cha cha"
 const slotLabel = (s, d) => '*' + s.name.toUpperCase() + ': ' + d.name.toLowerCase();
 
-/* ======================= config / storage ======================= */
+/* ======================= config / storage =======================
+   Mikayla's playlists ship as defaults. Editing a field in Setup overrides
+   the default and sticks; clearing one leaves it empty rather than snapping
+   back. "Reset to defaults" puts this list back. */
+const YTM = 'https://music.youtube.com/playlist?list=';
+const DEFAULT_PLAYLISTS = {
+  'latin:cha':      YTM + 'PLGOUpRS1CgPQ',
+  'latin:samba':    YTM + 'PLWueq-XzV_eI',
+  'latin:rumba':    YTM + 'PLGWqFyzGYSrQ',
+  'latin:paso':     '',                      // TODO: no playlist given yet
+  'latin:jive':     YTM + 'PLf3kz3VewWYY',
+
+  'rhythm:cha':     YTM + 'PLK6_CDZYRIAc',
+  'rhythm:rumba':   YTM + 'PLNeqCv6RaM4g',
+  'rhythm:swing':   YTM + 'PLRjxM0Zcs-68',
+  'rhythm:bolero':  YTM + 'PLPew8Ou6u7JM',
+  'rhythm:mambo':   YTM + 'PLbbiiGsHRm1w',
+
+  'standard:waltz':  YTM + 'PLISTVpGbrx9w',
+  'standard:tango':  YTM + 'PLVmotUcSw7zM',
+  'standard:vwaltz': YTM + 'PLZZQeSQdIev8',
+  'standard:fox':    YTM + 'PLfHo0vAza0Kg',
+  'standard:quick':  YTM + 'PLQW86YaEZKMk',
+
+  'smooth:waltz':   YTM + 'PLaKbxQbd5vBM',
+  'smooth:tango':   YTM + 'PLGMxTTNT9T6k',
+  'smooth:fox':     YTM + 'PLX77YIc1skhg',
+  'smooth:vwaltz':  YTM + 'PLWYpq3HlBYAo',
+};
+
 const STORE = 'rounds.v1';
 const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{} };
 let cfg = load();
 
 function load(){
+  let c = JSON.parse(JSON.stringify(DEFAULTS));
   try{
     const raw = localStorage.getItem(STORE);
-    if(raw) return Object.assign({}, DEFAULTS, JSON.parse(raw));
+    if(raw) c = Object.assign(c, JSON.parse(raw));
   }catch(e){}
-  return JSON.parse(JSON.stringify(DEFAULTS));
+  // Saved values win; defaults only fill slots never touched. A slot the
+  // user cleared is stored as '', so it stays cleared.
+  c.playlists = Object.assign({}, DEFAULT_PLAYLISTS, c.playlists || {});
+  return c;
 }
 function save(){
   try{ localStorage.setItem(STORE, JSON.stringify(cfg)); }catch(e){}
@@ -755,6 +789,10 @@ function renderSetup(){
     };
   });
 }
+$('resetBtn').onclick = () => {
+  cfg.playlists = Object.assign({}, DEFAULT_PLAYLISTS);
+  save(); renderSetup();
+};
 $('ioToggle').onclick = () => {
   const box = $('ioBox'), hint = $('ioHint');
   const open = box.style.display !== 'block';
@@ -896,7 +934,8 @@ renderHome();
 show('home');
 
 /* exposed for the headless test harness */
-window.__rounds = { R, cfg, buildQueue, parsePlaylistId, STYLES, slotKey };
+window.__rounds = { R, buildQueue, parsePlaylistId, STYLES, slotKey };
+window.__cfg = () => cfg;
 </script>
 </body>
 </html>
