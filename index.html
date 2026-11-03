@@ -75,6 +75,27 @@
   input:focus{outline:none;border-color:var(--accent-dim)}
   .hint{color:var(--mute);font-size:12.5px;margin-top:10px}
   .warn{color:var(--bad);font-size:13px;margin-top:10px}
+  .banner{
+    display:none;background:#2a1d1d;border:1px solid #58343a;border-radius:12px;
+    padding:13px 16px;margin-bottom:14px;font-size:13.5px;line-height:1.55;
+  }
+  .banner b{color:var(--accent)}
+  .banner code{
+    background:#140f10;border:1px solid #58343a;border-radius:6px;padding:2px 7px;
+    font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;display:inline-block;margin:2px 0;
+  }
+  /* playlist check */
+  #check{display:none;text-align:center}
+  .chk-list{text-align:left;max-width:520px;margin:18px auto 0}
+  .chk-row{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:14px}
+  .chk-row:last-child{border-bottom:none}
+  .chk-row .st{width:18px;flex:none;text-align:center}
+  .chk-row .nm{width:190px;flex:none;color:var(--mute);font-size:13px}
+  .chk-row .msg{flex:1;color:var(--mute);font-size:12.5px}
+  .chk-row.pass .st{color:var(--good)}
+  .chk-row.fail .st{color:var(--bad)}
+  .chk-row.fail .msg{color:var(--bad)}
+  .chk-row.now{background:#1a1d23}
 
   .start-row{display:flex;gap:12px;align-items:center;margin-top:18px}
 
@@ -130,6 +151,14 @@
     <span class="spacer"></span>
     <button class="btn ghost" id="toSetup">Playlists</button>
   </header>
+
+  <div class="banner" id="fileBanner">
+    <b>This page is open as a file.</b> YouTube&rsquo;s player usually refuses to start
+    without a real web origin &mdash; that&rsquo;s the &ldquo;video player configuration error.&rdquo;
+    Serve it over localhost instead: open Terminal and run<br>
+    <code>cd ~/code/rounds &amp;&amp; python3 -m http.server 8000</code><br>
+    then open <code>http://localhost:8000</code>. Leave that Terminal window open while you practice.
+  </div>
 
   <!-- ============ HOME ============ -->
   <section id="home">
@@ -206,6 +235,7 @@
       </div>
       <div id="setupList"></div>
       <div class="io">
+        <button class="btn" id="checkBtn">Check playlists</button>
         <button class="btn" id="ioToggle">Copy / paste settings</button>
         <button class="btn" id="backBtn">Done</button>
       </div>
@@ -213,6 +243,20 @@
       <div class="hint" id="ioHint" style="display:none">
         Copy this to move your setup to another device, or paste one in and press Done.
       </div>
+    </div>
+  </section>
+
+  <!-- ============ PLAYLIST CHECK ============ -->
+  <section id="check">
+    <div class="stage" id="chkStage">checking playlists</div>
+    <div class="dance-name" style="font-size:clamp(26px,6vw,38px)" id="chkHead">&nbsp;</div>
+    <div class="player-wrap" style="margin-top:18px">
+      <div class="cap">test player</div>
+      <div id="yt2"></div>
+    </div>
+    <div class="chk-list" id="chkList"></div>
+    <div class="controls">
+      <button class="btn" id="chkStop">Back to playlists</button>
     </div>
   </section>
 
@@ -292,16 +336,37 @@ const fmt = ms => {
 };
 
 /* ======================= YouTube player ======================= */
-let player = null, playerReady = false;
+let player = null, playerReady = false, apiReady = false;
+const isFile = location.protocol === 'file:';
+
+function playerVars(){
+  const v = { controls:0, disablekb:1, modestbranding:1, rel:0, playsinline:1, iv_load_policy:3, fs:0 };
+  // YouTube wants a real origin; omitting this on file:// is what the
+  // "video player configuration error" usually comes down to.
+  if(!isFile) v.origin = location.origin;
+  return v;
+}
+
+/* Plain-English version of the YouTube IFrame API error codes. */
+const YT_ERR = {
+  2:   'bad playlist or video id',
+  5:   'player couldn’t start — open the page over http://localhost, not as a file',
+  100: 'video is private or deleted',
+  101: 'uploader blocked embedding',
+  150: 'uploader blocked embedding',
+};
+const errText = code => (YT_ERR[code] || 'player error') + ' (code ' + code + ')';
+
 (function loadApi(){
   const t = document.createElement('script');
   t.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(t);
 })();
 window.onYouTubeIframeAPIReady = function(){
+  apiReady = true;
   player = new YT.Player('yt', {
     height:'200', width:'356',
-    playerVars:{ controls:0, disablekb:1, modestbranding:1, rel:0, playsinline:1, iv_load_policy:3, fs:0 },
+    playerVars: playerVars(),
     events:{
       onReady: () => { playerReady = true; },
       onStateChange: onPlayerState,
@@ -446,9 +511,12 @@ function onPlayerState(e){
   }
 }
 
-function onPlayerError(){
+function onPlayerError(e){
   if(!R.active) return;
-  // Unplayable / embedding disabled — try a different track in the same list.
+  const code = e && e.data;
+  // Unplayable / embedding disabled — say why, then try another track.
+  $('trackName').textContent = 'skipped a track: ' + errText(code);
+  if(code === 5 || code === 2) $('fileBanner').style.display = isFile ? 'block' : 'none';
   if(R.phase === 'loading' || R.phase === 'song') playRandom();
 }
 
@@ -583,9 +651,10 @@ $('stopBtn').onclick = () => stopRound(false);
 function show(which){
   // NB: must be an explicit 'block' — '' would fall back to the #round/#setup
   // display:none rules in the stylesheet and show a blank page.
-  for(const id of ['home','round','setup']) $(id).style.display = (id === which) ? 'block' : 'none';
-  $('toSetup').style.display = (which === 'round') ? 'none' : '';
-  $('hdrsub').textContent = which === 'setup' ? 'setup' : 'practice music';
+  for(const id of ['home','round','setup','check']) $(id).style.display = (id === which) ? 'block' : 'none';
+  $('toSetup').style.display = (which === 'home') ? '' : 'none';
+  $('hdrsub').textContent = which === 'setup' ? 'setup' : which === 'check' ? 'checking' : 'practice music';
+  $('fileBanner').style.display = (isFile && (which === 'home' || which === 'setup')) ? 'block' : 'none';
 }
 $('toSetup').onclick = () => { renderSetup(); show('setup'); };
 $('backBtn').onclick = () => { applyIo(); renderHome(); show('home'); };
@@ -701,6 +770,125 @@ function applyIo(){
     if(o && typeof o === 'object'){ cfg = Object.assign({}, DEFAULTS, o); save(); }
   }catch(e){}
   box.style.display = 'none'; $('ioHint').style.display = 'none';
+}
+
+/* ======================= playlist check =======================
+   Walks every configured playlist, loads it and plays a couple of seconds
+   of one track, so a broken playlist shows up here instead of mid-round. */
+let p2 = null, chk = null;
+
+$('checkBtn').onclick = startCheck;
+$('chkStop').onclick = () => { stopCheck(); show('setup'); };
+
+function startCheck(){
+  const slots = [];
+  STYLES.forEach(s => s.dances.forEach(d => {
+    const k = slotKey(s.id, d.id);
+    const id = parsePlaylistId(cfg.playlists[k]);
+    if(id) slots.push({ label:s.name + ' · ' + d.name, id, k });
+  }));
+  if(!slots.length) return;
+  chk = { slots, i:-1, res:[], settled:true, timer:null, tries:0, len:0 };
+  $('chkStage').textContent = 'checking playlists';   // reset after a previous run
+  show('check');
+  renderChk();
+  $('chkHead').textContent = 'starting…';
+  if(!window.YT || !YT.Player){
+    $('chkHead').textContent = 'YouTube player didn’t load — check your connection';
+    return;
+  }
+  if(p2){ nextSlot(); return; }
+  p2 = new YT.Player('yt2', {
+    height:'200', width:'356',
+    playerVars: playerVars(),
+    events:{
+      onReady: () => nextSlot(),
+      onStateChange: e => { if(e.data === YT.PlayerState.PLAYING) settle(true); },
+      onError: e => onCheckError(e && e.data),
+    }
+  });
+}
+
+function stopCheck(){
+  if(chk && chk.timer) clearTimeout(chk.timer);
+  chk = null;
+  try{ if(p2) p2.stopVideo(); }catch(e){}
+}
+
+function nextSlot(){
+  if(!chk) return;
+  if(chk.timer) clearTimeout(chk.timer);
+  chk.i++;
+  if(chk.i >= chk.slots.length){ finishCheck(); return; }
+  chk.settled = false; chk.tries = 0; chk.len = 0;
+  $('chkHead').textContent = chk.slots[chk.i].label;
+  renderChk();
+  try{
+    p2.setVolume(10);
+    p2.cuePlaylist({ list:chk.slots[chk.i].id, listType:'playlist', index:0 });
+  }catch(e){}
+  waitList2(0);
+  chk.timer = setTimeout(() =>
+    settle(false, chk.len ? 'no track would play' : 'playlist wouldn’t load — is it private?'), 14000);
+}
+
+function waitList2(n){
+  if(!chk || chk.settled) return;
+  let items = null;
+  try{ items = p2.getPlaylist(); }catch(e){}
+  if(items && items.length){
+    chk.len = items.length;
+    try{ p2.playVideoAt(0); }catch(e){}
+    return;
+  }
+  if(n > 50) return;             // let the timeout report it
+  setTimeout(() => waitList2(n + 1), 200);
+}
+
+function onCheckError(code){
+  if(!chk || chk.settled) return;
+  // One bad track shouldn't condemn the playlist — try a couple more.
+  chk.tries++;
+  if(chk.tries < 3 && chk.len > chk.tries){
+    try{ p2.playVideoAt(chk.tries); }catch(e){}
+    return;
+  }
+  settle(false, errText(code));
+  if(code === 5 || code === 2) $('fileBanner').style.display = isFile ? 'block' : 'none';
+}
+
+function settle(ok, msg){
+  if(!chk || chk.settled) return;
+  chk.settled = true;
+  if(chk.timer) clearTimeout(chk.timer);
+  chk.res[chk.i] = { ok, msg: ok ? chk.len + ' tracks' : (msg || 'failed') };
+  try{ p2.stopVideo(); }catch(e){}
+  renderChk();
+  setTimeout(nextSlot, 300);
+}
+
+function finishCheck(){
+  const bad = chk.res.filter(r => r && !r.ok).length;
+  $('chkStage').textContent = 'done';
+  $('chkHead').textContent = bad
+    ? bad + ' of ' + chk.slots.length + ' need a look'
+    : 'all ' + chk.slots.length + ' playlists play';
+  if(chk.timer) clearTimeout(chk.timer);
+  chk.i = -1;
+  renderChk();
+}
+
+function renderChk(){
+  if(!chk) return;
+  $('chkList').innerHTML = chk.slots.map((s, n) => {
+    const r = chk.res[n];
+    const cls = r ? (r.ok ? 'pass' : 'fail') : (n === chk.i ? 'now' : '');
+    const st  = r ? (r.ok ? '✓' : '✕') : (n === chk.i ? '…' : '');
+    return '<div class="chk-row ' + cls + '">' +
+      '<span class="st">' + st + '</span>' +
+      '<span class="nm">' + s.label + '</span>' +
+      '<span class="msg">' + (r ? r.msg : '') + '</span></div>';
+  }).join('');
 }
 
 /* ======================= go ======================= */
