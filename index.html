@@ -13,7 +13,7 @@
   :root{
     --ink:#1A1522;
     --bg:#EADEF8;        /* page */
-    --fill:#C9E8FF;      /* chips, inputs, plain buttons — the light bits */
+    --fill:#BCE1FF;      /* chips, inputs, plain buttons — the light bits */
     --paper:#FFFFFF;
     --paper-2:#F7F2FC;
     --panel:#4D9BE0;     /* the dance / timing / playlist boxes */
@@ -41,8 +41,8 @@
     --standard:#4D9BE0;
     --smooth:#9B6DD6;
 
-    --good:#5BBF7A;
-    --bad:#E05D5D;
+    --good:#2FBE5E;
+    --bad:#E53535;
   }
   *{box-sizing:border-box}
   svg{shape-rendering:crispEdges}   /* every sprite here is pixel art */
@@ -66,6 +66,10 @@
 
   /* ---------- header ---------- */
   header{display:flex;align-items:center;gap:12px;margin:4px 0 22px;flex-wrap:wrap}
+  /* on the iPod screen the only thing left in the header is the wordmark,
+     and the iPod is centred, so left-aligning it looks like a mistake */
+  body[data-screen="round"] header{justify-content:center;margin-bottom:16px}
+  body[data-screen="round"] header .spacer{display:none}
   h1{font-size:28px;margin:0;letter-spacing:.02em;line-height:1.2}
   header .sub{color:var(--mute);font-size:12px}
   header .spacer{flex:1}
@@ -695,12 +699,25 @@ function setPaused(isPaused){
   const d = $('deco');
   if(!d) return;
   const bits = [
-    ['heart','#F5C542',30,  '4%','12%'],  ['spark','#E8A8D8',16, '11%','26%'],
-    ['spark','#7FC6F0',14,  '3%','40%'],  ['heart','#4D7BE0',22,  '8%','62%'],
-    ['spark','#C9A8E8',18,  '15%','78%'], ['heart','#F5C542',26,  '5%','88%'],
-    ['spark','#E8A8D8',15, '86%','10%'],  ['heart','#F5C542',28, '90%','24%'],
-    ['spark','#7FC6F0',16, '83%','44%'],  ['heart','#4D7BE0',20, '91%','58%'],
-    ['spark','#C9A8E8',17, '85%','74%'],  ['heart','#F5C542',24, '89%','90%'],
+    ['heart','#F5C542',30,  '3%','7%'],   ['spark','#E8A8D8',16, '17%','14%'],
+    ['spark','#7FC6F0',14, '31%','5%'],   ['heart','#4D7BE0',22, '45%','11%'],
+    ['spark','#C9A8E8',18, '59%','4%'],   ['heart','#F5C542',26, '72%','13%'],
+    ['spark','#E8A8D8',15, '86%','6%'],   ['heart','#4D7BE0',20, '94%','18%'],
+
+    ['spark','#7FC6F0',16,  '8%','27%'],  ['heart','#F5C542',24, '22%','38%'],
+    ['spark','#C9A8E8',17, '39%','30%'],  ['spark','#E8A8D8',15, '54%','41%'],
+    ['heart','#4D7BE0',21, '67%','28%'],  ['spark','#7FC6F0',14, '81%','36%'],
+    ['heart','#F5C542',27, '93%','45%'],
+
+    ['heart','#E8A8D8',22,  '4%','52%'],  ['spark','#C9A8E8',18, '19%','63%'],
+    ['spark','#F5C542',15, '34%','55%'],  ['heart','#7FC6F0',20, '48%','66%'],
+    ['spark','#4D7BE0',16, '63%','57%'],  ['heart','#C9A8E8',24, '77%','68%'],
+    ['spark','#E8A8D8',17, '90%','60%'],
+
+    ['spark','#7FC6F0',15,  '6%','79%'],  ['heart','#F5C542',26, '21%','88%'],
+    ['spark','#E8A8D8',16, '37%','80%'],  ['heart','#4D7BE0',21, '52%','91%'],
+    ['spark','#C9A8E8',18, '68%','82%'],  ['heart','#F5C542',23, '83%','90%'],
+    ['spark','#7FC6F0',14, '95%','76%'],
   ];
   d.innerHTML = bits.map(([kind,color,size,left,top]) => {
     const vb = kind === 'heart' ? '0 0 7 6' : '0 0 5 5';
@@ -1044,6 +1061,7 @@ function show(which){
   $('fileBanner').style.display = (isFile && (which === 'home' || which === 'setup')) ? 'block' : 'none';
   // hearts and sparkles belong to the iPod screen only
   document.body.classList.toggle('show-deco', which === 'round');
+  document.body.dataset.screen = which;
 }
 $('toSetup').onclick = () => { renderSetup(); show('setup'); };
 $('backBtn').onclick = () => { applyIo(); renderHome(); show('home'); };
