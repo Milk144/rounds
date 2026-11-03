@@ -382,7 +382,7 @@
   body.plain *{font-family:inherit!important}
   body.plain svg{shape-rendering:auto}
   body.plain .plain-only{display:inline}
-  body.plain .pixel-only,body.plain .fun-toggle .skull{display:none}
+  body.plain .pixel-only{display:none}
   body.plain .sub{display:inline;color:var(--mute);font-size:13px}
   body.plain .dance-name,body.plain .dance-sub,
   body.plain .track,body.plain .upnext{text-transform:none}
@@ -562,8 +562,22 @@
   body.plain .chk-list{background:none;border:none;box-shadow:none;padding:0}
   body.plain .chk-row{border-bottom:1px solid var(--line)}
   body.plain .chk-row.now{background:#1a1d23}
-  body.plain .fun-toggle{background:var(--panel-2);color:var(--mute);border:1px solid var(--line);border-radius:10px;box-shadow:none}
-  body.plain .fun-toggle:hover{background:#262a32}
+  body.plain .fun-toggle{
+    background:var(--panel-2);color:var(--mute);
+    border:1px solid var(--line);border-radius:10px;box-shadow:none;
+  }
+  /* a taste of what you're missing */
+  @keyframes funCycle{
+    0%  {background:#E8699A}
+    25% {background:#9B6DD6}
+    50% {background:#4D9BE0}
+    75% {background:#F5C542}
+    100%{background:#E8699A}
+  }
+  body.plain .fun-toggle:hover{
+    animation:funCycle 1.6s steps(1,end) infinite;
+    color:#1A1522;border-color:#1A1522;
+  }
 
   @media (max-width:620px){
     .pl-row{grid-template-columns:1fr;gap:4px}
@@ -1486,9 +1500,10 @@ function renderChk(){
 /* ======================= i hate fun =======================
    Flips the whole page back to the plain look this started as. Nothing but
    a class on <body>; every rule lives under body.plain in the stylesheet. */
+const GRUMP = ['i hate fun', 'i kick puppies', 'sadness'];
 function setPlain(on){
   document.body.classList.toggle('plain', !!on);
-  $('funLabel').textContent = on ? 'bring back the fun' : 'i hate fun';
+  $('funLabel').textContent = on ? 'yay' : GRUMP[Math.floor(Math.random() * GRUMP.length)];
   $('funToggle').title = on ? 'back to pixels' : 'switch to the plain look';
   cfg.plain = !!on; save();
 }
