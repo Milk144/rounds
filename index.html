@@ -38,7 +38,7 @@
 
     --latin:#E8699A;
     --rhythm:#F5C542;
-    --standard:#4D9BE0;
+    --standard:#49C98C;
     --smooth:#9B6DD6;
 
     --good:#2FBE5E;
@@ -95,7 +95,7 @@
     padding:16px 18px;margin-bottom:22px;
   }
   .panel .hint,.panel .lbl,.panel .unit,.panel .plname{color:var(--on-panel)}
-  .panel .warn{color:#FFE3E3}
+  .panel .warn{color:#FFB3D9}
   .panel h2{
     font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.06em;
     margin:0 0 14px;color:var(--ink);text-transform:uppercase;
@@ -879,7 +879,7 @@ const DEFAULT_PLAYLISTS = {
 };
 
 const STORE = 'rounds.v1';
-const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{}, plain:false };
+const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{}, plain:false, checked:{} };
 let cfg = load();
 
 function load(){
@@ -891,6 +891,7 @@ function load(){
   // Saved values win; defaults only fill slots never touched. A slot the
   // user cleared is stored as '', so it stays cleared.
   c.playlists = Object.assign({}, DEFAULT_PLAYLISTS, c.playlists || {});
+  c.checked = c.checked || {};
   return c;
 }
 function save(){
@@ -997,7 +998,8 @@ const R = {
   paused:false,
   pausedLeft:0,
   lastBeep:-1,
-  tried:new Set(),   // playlist indexes already attempted for this dance
+  played:new Set(),  // indexes used already — for variety, not a limit
+  bad:new Set(),     // indexes YouTube refused — these really are out
   listLen:0,
   raf:null,
   wake:null,
@@ -1008,18 +1010,27 @@ function buildQueue(styleId){
   return s.dances
     .map((d, idx) => ({ d, idx }))
     .filter(({d, idx}) => !cfg.skip[slotKey(styleId, d.id) + '#' + idx])
-    .map(({d}) => ({ dance:d, listId: parsePlaylistId(cfg.playlists[slotKey(styleId, d.id)]) }));
+    .map(({d}) => ({
+      dance:d,
+      key: slotKey(styleId, d.id),
+      listId: parsePlaylistId(cfg.playlists[slotKey(styleId, d.id)]),
+    }));
+}
+
+/* A slot the check has seen and rejected — empty playlist, private, nothing
+   playable. Unchecked slots are given the benefit of the doubt. */
+function slotBroken(x){
+  const r = cfg.checked[x.key];
+  return !!(x.listId && r && !r.ok);
 }
 
 async function startRound(){
   const styleId = cfg.style;
   const q = buildQueue(styleId);
   if(!q.length) return;
-  const missing = q.filter(x => !x.listId);
+  const missing = q.filter(x => !x.listId || slotBroken(x));
   if(missing.length){
-    $('missingWarn').style.display = '';
-    $('missingWarn').textContent =
-      'Add a playlist for: ' + missing.map(x => x.dance.name).join(', ');
+    renderHome();
     return;
   }
   audio();                       // unlock audio on this user gesture
@@ -1037,7 +1048,8 @@ function beginDance(i){
   if(i >= R.queue.length){ finishRound(); return; }
   const item = R.queue[i];
   R.phase = 'loading';
-  R.tried = new Set();
+  R.played = new Set();
+  R.bad = new Set();
   R.listLen = 0;
   paintHeader();
   $('clock').textContent = fmt(cfg.songSec * 1000);
@@ -1068,16 +1080,27 @@ function waitForList(tries){
   setTimeout(() => waitForList(tries + 1), 200);
 }
 
+/* Picks a track that isn't the one playing. Tracks YouTube refused stay out
+   for the rest of the dance; everything else comes back round once the list
+   is exhausted, so "New song" can be pressed forever without ending up at
+   the next dance. */
 function playRandom(){
   if(R.listLen === 0) return;
-  if(R.tried.size >= R.listLen){
+  let pool = [];
+  for(let i = 0; i < R.listLen; i++) if(!R.bad.has(i)) pool.push(i);
+  if(!pool.length){
     $('trackName').textContent = 'no playable track — skipping';
     setTimeout(() => beginGap(), 1500);
     return;
   }
-  let idx;
-  do { idx = Math.floor(Math.random() * R.listLen); } while(R.tried.has(idx));
-  R.tried.add(idx);
+  let fresh = pool.filter(i => !R.played.has(i));
+  if(!fresh.length){                       // been through them all — go again
+    R.played.clear();
+    fresh = pool.length > 1 ? pool.filter(i => i !== R.lastIdx) : pool;
+  }
+  const idx = fresh[Math.floor(Math.random() * fresh.length)];
+  R.played.add(idx);
+  R.lastIdx = idx;
   player.setVolume(100);
   player.playVideoAt(idx);
 }
@@ -1105,6 +1128,7 @@ function onPlayerError(e){
   const code = e && e.data;
   // Unplayable / embedding disabled — say why, then try another track.
   $('trackName').textContent = 'skipped: ' + errText(code);
+  if(typeof R.lastIdx === 'number') R.bad.add(R.lastIdx);
   if(code === 5 || code === 2) $('fileBanner').style.display = isFile ? 'block' : 'none';
   if(R.phase === 'loading' || R.phase === 'song') playRandom();
 }
@@ -1281,7 +1305,8 @@ function renderHome(){
   $('danceChips').innerHTML = s.dances.map((d, idx) => {
     const k = slotKey(s.id, d.id), sk = k + '#' + idx;
     const off = !!cfg.skip[sk];
-    const missing = !parsePlaylistId(cfg.playlists[k]);
+    const missing = !parsePlaylistId(cfg.playlists[k])
+                 || (cfg.checked[k] && !cfg.checked[k].ok);
     return '<button class="chip ' + (off ? 'off ' : '') + (!off && missing ? 'missing' : '') + '" data-skip="' + sk + '">' +
       '<span class="dot"></span>' + d.name +
       ' <span class="tempo">' + d.tempo + '</span></button>';
@@ -1297,9 +1322,13 @@ function renderHome(){
   const on = buildQueue(cfg.style);
   $('danceCount').textContent = '(' + on.length + ' of ' + s.dances.length + ')';
   const miss = on.filter(x => !x.listId);
-  $('missingWarn').style.display = miss.length ? '' : 'none';
-  if(miss.length) $('missingWarn').textContent =
-    'No playlist yet for: ' + miss.map(x => x.dance.name).join(', ');
+  const bad  = on.filter(slotBroken);
+  const notes = [];
+  if(miss.length) notes.push('No playlist yet for: ' + miss.map(x => x.dance.name).join(', '));
+  if(bad.length)  notes.push('Nothing plays in: ' + bad.map(x => x.dance.name).join(', ')
+                             + ' — fix it under Playlists.');
+  $('missingWarn').style.display = notes.length ? '' : 'none';
+  $('missingWarn').textContent = notes.join('  ');
 
   document.querySelectorAll('.len').forEach(b => {
     b.classList.toggle('on', +b.dataset.sec === cfg.songSec);
@@ -1312,7 +1341,7 @@ function renderHome(){
   $('roundSummary').textContent = on.length
     ? on.length + ' dances · about ' + Math.round(total/60) + ' min'
     : 'nothing selected';
-  $('startBtn').disabled = !on.length || !!miss.length;
+  $('startBtn').disabled = !on.length || !!miss.length || !!bad.length;
 }
 
 document.querySelectorAll('.len').forEach(b => {
@@ -1352,6 +1381,7 @@ function renderSetup(){
   $('setupList').querySelectorAll('input[data-k]').forEach(el => {
     el.oninput = () => {
       cfg.playlists[el.dataset.k] = el.value.trim();
+      delete cfg.checked[el.dataset.k];   // a changed playlist is unjudged again
       el.classList.toggle('ok', !!parsePlaylistId(el.value));
       save();
     };
@@ -1468,6 +1498,8 @@ function settle(ok, msg){
   chk.settled = true;
   if(chk.timer) clearTimeout(chk.timer);
   chk.res[chk.i] = { ok, msg: ok ? chk.len + ' tracks' : (msg || 'failed') };
+  cfg.checked[chk.slots[chk.i].k] = { ok: !!ok, n: chk.len, msg: chk.res[chk.i].msg };
+  save();
   try{ p2.stopVideo(); }catch(e){}
   renderChk();
   setTimeout(nextSlot, 300);
@@ -1500,7 +1532,8 @@ function renderChk(){
 /* ======================= i hate fun =======================
    Flips the whole page back to the plain look this started as. Nothing but
    a class on <body>; every rule lives under body.plain in the stylesheet. */
-const GRUMP = ['i hate fun', 'i kick puppies', 'sadness'];
+const GRUMP = ['i hate fun', 'i kick puppies', 'sadness',
+               'despair', "it's not a phase, dad", 'womp womp'];
 function setPlain(on){
   document.body.classList.toggle('plain', !!on);
   $('funLabel').textContent = on ? 'yay' : GRUMP[Math.floor(Math.random() * GRUMP.length)];
