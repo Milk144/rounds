@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rounds</title>
+<style>
+  :root{
+    --bg:#0c0d10; --panel:#16181d; --panel-2:#1d2026; --line:#2a2e37;
+    --ink:#f2f3f5; --mute:#9aa1ad; --accent:#e4b363; --accent-dim:#8a6c3b;
+    --good:#6fcf97; --bad:#eb5757;
+    --latin:#e4617b; --rhythm:#e4b363; --standard:#6aa6e8; --smooth:#9b7fe0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.5 ui-sans-serif,-apple-system,"SF Pro Text",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:baseline;gap:12px;margin:8px 0 22px}
+  h1{font-size:20px;margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+  header .sub{color:var(--mute);font-size:13px}
+  header .spacer{flex:1}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  .btn{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:9px 14px;font-size:14px;transition:background .12s,border-color .12s;
+  }
+  .btn:hover{background:#262a32;border-color:#3a3f4a}
+  .btn.primary{background:var(--accent);color:#1a1405;border-color:var(--accent);font-weight:600}
+  .btn.primary:hover{background:#efc478}
+  .btn.ghost{background:none}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.lg{padding:16px 28px;font-size:17px;border-radius:12px}
+
+  /* ---- home ---- */
+  .styles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:22px}
+  .style-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;text-align:left;position:relative;overflow:hidden;
+  }
+  .style-card:hover{border-color:#3a3f4a}
+  .style-card.on{border-color:var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 11%,var(--panel)),var(--panel))}
+  .style-card .bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);opacity:.5}
+  .style-card.on .bar{opacity:1}
+  .style-card .name{font-size:17px;font-weight:600;letter-spacing:.04em}
+  .style-card .meta{color:var(--mute);font-size:12.5px;margin-top:3px}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .panel h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 12px;font-weight:600}
+
+  .dances{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    display:flex;align-items:center;gap:8px;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:999px;padding:7px 14px 7px 11px;font-size:14px;
+  }
+  .chip.off{opacity:.42}
+  .chip.missing{border-color:var(--bad)}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:none}
+  .chip.off .dot{background:var(--mute)}
+  .chip.missing .dot{background:var(--bad)}
+  .chip .tempo{color:var(--mute);font-size:11.5px}
+
+  .lenrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .len{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 16px;font-variant-numeric:tabular-nums}
+  .len.on{background:var(--accent);color:#1a1405;border-color:var(--accent);font-weight:600}
+  input[type=number],input[type=text]{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    color:var(--ink);padding:8px 10px;font:inherit;font-size:14px;
+  }
+  input[type=number]{width:74px;text-align:center;font-variant-numeric:tabular-nums}
+  input:focus{outline:none;border-color:var(--accent-dim)}
+  .hint{color:var(--mute);font-size:12.5px;margin-top:10px}
+  .warn{color:var(--bad);font-size:13px;margin-top:10px}
+
+  .start-row{display:flex;gap:12px;align-items:center;margin-top:18px}
+
+  /* ---- round ---- */
+  #round{display:none;text-align:center;padding-top:10px}
+  .stage{color:var(--mute);font-size:12.5px;letter-spacing:.16em;text-transform:uppercase}
+  .dance-name{font-size:clamp(38px,11vw,72px);font-weight:600;letter-spacing:-.01em;margin:6px 0 2px;line-height:1.05}
+  .dance-sub{color:var(--mute);font-size:13.5px;min-height:20px}
+  .clock{
+    font-size:clamp(52px,16vw,96px);font-weight:300;font-variant-numeric:tabular-nums;
+    letter-spacing:.01em;margin:16px 0 4px;line-height:1;
+  }
+  .clock.fading{color:var(--accent)}
+  .progress{height:4px;background:var(--panel-2);border-radius:99px;overflow:hidden;margin:14px auto 0;max-width:460px}
+  .progress i{display:block;height:100%;background:var(--accent);width:0}
+  .track{color:var(--mute);font-size:13px;margin-top:16px;min-height:19px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .upnext{color:var(--mute);font-size:13px;margin-top:6px;min-height:19px}
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .pips{display:flex;gap:6px;justify-content:center;margin-top:22px}
+  .pip{width:34px;height:3px;border-radius:99px;background:var(--panel-2)}
+  .pip.done{background:var(--accent-dim)}
+  .pip.now{background:var(--accent)}
+  #gapmode .clock{color:var(--accent)}
+  .player-wrap{margin:26px auto 0;width:356px;max-width:100%}
+  .player-wrap .cap{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+  #yt{border-radius:10px;overflow:hidden;background:#000;min-height:200px}
+
+  /* ---- setup ---- */
+  #setup{display:none}
+  .setup-style{margin-bottom:8px}
+  .setup-style h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin:18px 0 10px;color:var(--c)}
+  .pl-row{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center;margin-bottom:8px}
+  .pl-row label{font-size:13.5px}
+  .pl-row label .plname{color:var(--mute);font-size:12px;display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pl-row input{width:100%}
+  .pl-row input.ok{border-color:var(--accent-dim)}
+  .io{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  textarea{
+    width:100%;min-height:120px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;color:var(--ink);padding:10px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    margin-top:10px;display:none;
+  }
+  @media (max-width:620px){ .pl-row{grid-template-columns:1fr;gap:5px} .pl-row label{margin-top:6px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Rounds</h1>
+    <span class="sub" id="hdrsub">practice music</span>
+    <span class="spacer"></span>
+    <button class="btn ghost" id="toSetup">Playlists</button>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <section id="home">
+    <div class="styles" id="styleCards"></div>
+
+    <div class="panel">
+      <h2>Dances <span id="danceCount" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div class="dances" id="danceChips"></div>
+      <div class="hint">Tap a dance to leave it out of the round. Order is fixed (collegiate).</div>
+      <div class="warn" id="missingWarn" style="display:none"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Timing</h2>
+      <div class="lenrow">
+        <span style="color:var(--mute);font-size:13px;width:86px">Song</span>
+        <button class="len" data-sec="60">1:00</button>
+        <button class="len" data-sec="90">1:30</button>
+        <button class="len" data-sec="120">2:00</button>
+        <input type="number" id="lenCustom" min="10" max="600" step="5" title="seconds">
+        <span style="color:var(--mute);font-size:13px">sec</span>
+      </div>
+      <div class="lenrow" style="margin-top:10px">
+        <span style="color:var(--mute);font-size:13px;width:86px">Gap</span>
+        <input type="number" id="gapSec" min="0" max="120" step="1">
+        <span style="color:var(--mute);font-size:13px">sec of beeps</span>
+        <span style="color:var(--mute);font-size:13px;width:52px;margin-left:14px">Fade</span>
+        <input type="number" id="fadeSec" min="0" max="30" step="1">
+        <span style="color:var(--mute);font-size:13px">sec</span>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="btn primary lg" id="startBtn">Start round</button>
+      <span class="hint" id="roundSummary" style="margin:0"></span>
+    </div>
+  </section>
+
+  <!-- ============ ROUND ============ -->
+  <section id="round">
+    <div class="stage" id="stageLbl">Latin &middot; 1 of 5</div>
+    <div class="dance-name" id="danceName">Cha Cha</div>
+    <div class="dance-sub" id="danceSub"></div>
+
+    <div class="clock" id="clock">1:30</div>
+    <div class="progress"><i id="bar"></i></div>
+
+    <div class="track" id="trackName"></div>
+    <div class="upnext" id="upNext"></div>
+
+    <div class="pips" id="pips"></div>
+
+    <div class="controls">
+      <button class="btn" id="pauseBtn">Pause</button>
+      <button class="btn" id="rerollBtn">New song</button>
+      <button class="btn" id="nextBtn">Next dance</button>
+      <button class="btn ghost" id="stopBtn">Stop</button>
+    </div>
+
+    <div class="player-wrap">
+      <div class="cap">now playing</div>
+      <div id="yt"></div>
+    </div>
+  </section>
+
+  <!-- ============ SETUP ============ -->
+  <section id="setup">
+    <div class="panel">
+      <h2>Playlists</h2>
+      <div class="hint" style="margin:0 0 4px">
+        Paste a YouTube / YouTube&nbsp;Music playlist link (or just its ID) for each dance.
+        The playlist must be public or unlisted &mdash; private ones can&rsquo;t be embedded.
+        Latin and Rhythm get separate entries on purpose: the tempos are different.
+      </div>
+      <div id="setupList"></div>
+      <div class="io">
+        <button class="btn" id="ioToggle">Copy / paste settings</button>
+        <button class="btn" id="backBtn">Done</button>
+      </div>
+      <textarea id="ioBox" spellcheck="false"></textarea>
+      <div class="hint" id="ioHint" style="display:none">
+        Copy this to move your setup to another device, or paste one in and press Done.
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =======================================================================
+   Data — collegiate order. Tempos (measures per minute) are a reference
+   for building playlists; edit the numbers here if your circuit differs.
+   ======================================================================= */
+const STYLES = [
+  { id:'latin', name:'Latin', color:'var(--latin)', dances:[
+      {id:'cha',   name:'Cha Cha',        tempo:'30–32'},
+      {id:'samba', name:'Samba',          tempo:'50–52'},
+      {id:'rumba', name:'Rumba',          tempo:'25–27'},
+      {id:'paso',  name:'Paso Doble',     tempo:'60–62'},
+      {id:'jive',  name:'Jive',           tempo:'42–44'},
+  ]},
+  { id:'rhythm', name:'Rhythm', color:'var(--rhythm)', dances:[
+      {id:'cha',    name:'Cha Cha',       tempo:'28–30'},
+      {id:'rumba',  name:'Rumba',         tempo:'30–32'},
+      {id:'swing',  name:'Swing',         tempo:'34–36'},
+      {id:'bolero', name:'Bolero',        tempo:'24–26'},
+      {id:'mambo',  name:'Mambo',         tempo:'47–51'},
+  ]},
+  { id:'standard', name:'Standard', color:'var(--standard)', dances:[
+      {id:'waltz',  name:'Waltz',           tempo:'28–30'},
+      {id:'tango',  name:'Tango',           tempo:'31–33'},
+      {id:'vwaltz', name:'Viennese Waltz',  tempo:'58–60'},
+      {id:'fox',    name:'Foxtrot',         tempo:'28–30'},
+      {id:'quick',  name:'Quickstep',       tempo:'50–52'},
+  ]},
+  { id:'smooth', name:'Smooth', color:'var(--smooth)', dances:[
+      {id:'waltz',  name:'Waltz',           tempo:'30–32'},
+      {id:'tango',  name:'Tango',           tempo:'30–32'},
+      {id:'fox',    name:'Foxtrot',         tempo:'30–32'},
+      {id:'vwaltz', name:'Viennese Waltz',  tempo:'53–54'},
+  ]},
+];
+const styleById = id => STYLES.find(s => s.id === id);
+const slotKey   = (sid, did) => sid + ':' + did;
+// The playlist name Mikayla uses, e.g. "*LATIN: cha cha"
+const slotLabel = (s, d) => '*' + s.name.toUpperCase() + ': ' + d.name.toLowerCase();
+
+/* ======================= config / storage ======================= */
+const STORE = 'rounds.v1';
+const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{} };
+let cfg = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE);
+    if(raw) return Object.assign({}, DEFAULTS, JSON.parse(raw));
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save(){
+  try{ localStorage.setItem(STORE, JSON.stringify(cfg)); }catch(e){}
+}
+
+/* Accepts a full URL (youtube.com, music.youtube.com, youtu.be) or a bare ID. */
+function parsePlaylistId(raw){
+  if(!raw) return '';
+  const s = String(raw).trim();
+  if(!s) return '';
+  const m = s.match(/[?&]list=([A-Za-z0-9_-]+)/);
+  if(m) return m[1];
+  if(/^[A-Za-z0-9_-]{12,}$/.test(s) && !s.includes('/')) return s;
+  return '';
+}
+
+/* ======================= element helpers ======================= */
+const $ = id => document.getElementById(id);
+const fmt = ms => {
+  const t = Math.max(0, Math.ceil(ms/1000));
+  return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0');
+};
+
+/* ======================= YouTube player ======================= */
+let player = null, playerReady = false;
+(function loadApi(){
+  const t = document.createElement('script');
+  t.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(t);
+})();
+window.onYouTubeIframeAPIReady = function(){
+  player = new YT.Player('yt', {
+    height:'200', width:'356',
+    playerVars:{ controls:0, disablekb:1, modestbranding:1, rel:0, playsinline:1, iv_load_policy:3, fs:0 },
+    events:{
+      onReady: () => { playerReady = true; },
+      onStateChange: onPlayerState,
+      onError: onPlayerError,
+    }
+  });
+};
+
+/* ======================= beeps (Web Audio) ======================= */
+let ac = null;
+function audio(){
+  if(!ac){
+    const C = window.AudioContext || window.webkitAudioContext;
+    if(C) ac = new C();
+  }
+  if(ac && ac.state === 'suspended') ac.resume();
+  return ac;
+}
+function beep(high){
+  const c = audio(); if(!c) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = 'sine';
+  o.frequency.value = high ? 1320 : 760;
+  const t = c.currentTime;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(high ? 0.26 : 0.18, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + (high ? 0.34 : 0.16));
+  o.connect(g); g.connect(c.destination);
+  o.start(t); o.stop(t + 0.4);
+}
+
+/* ======================= round engine ======================= */
+const R = {
+  active:false,
+  phase:'idle',      // 'loading' | 'song' | 'gap'
+  style:null,
+  queue:[],          // [{dance, listId}]
+  i:0,
+  endAt:0,
+  paused:false,
+  pausedLeft:0,
+  lastBeep:-1,
+  tried:new Set(),   // playlist indexes already attempted for this dance
+  listLen:0,
+  raf:null,
+  wake:null,
+};
+
+function buildQueue(styleId){
+  const s = styleById(styleId);
+  return s.dances
+    .map((d, idx) => ({ d, idx }))
+    .filter(({d, idx}) => !cfg.skip[slotKey(styleId, d.id) + '#' + idx])
+    .map(({d}) => ({ dance:d, listId: parsePlaylistId(cfg.playlists[slotKey(styleId, d.id)]) }));
+}
+
+async function startRound(){
+  const styleId = cfg.style;
+  const q = buildQueue(styleId);
+  if(!q.length) return;
+  const missing = q.filter(x => !x.listId);
+  if(missing.length){
+    $('missingWarn').style.display = '';
+    $('missingWarn').textContent =
+      'Add a playlist for: ' + missing.map(x => x.dance.name).join(', ');
+    return;
+  }
+  audio();                       // unlock audio on this user gesture
+  R.active = true; R.style = styleById(styleId); R.queue = q; R.i = 0;
+  R.paused = false;
+  show('round');
+  renderPips();
+  try{ if('wakeLock' in navigator) R.wake = await navigator.wakeLock.request('screen'); }catch(e){}
+  beginDance(0);
+}
+
+function beginDance(i){
+  R.i = i;
+  if(i >= R.queue.length){ finishRound(); return; }
+  const item = R.queue[i];
+  R.phase = 'loading';
+  R.tried = new Set();
+  R.listLen = 0;
+  paintHeader();
+  $('clock').textContent = fmt(cfg.songSec * 1000);
+  $('clock').classList.remove('fading');
+  $('bar').style.width = '0%';
+  $('trackName').textContent = 'loading…';
+  if(!playerReady){ setTimeout(() => beginDance(i), 300); return; }
+  player.setVolume(100);
+  player.cuePlaylist({ list:item.listId, listType:'playlist', index:0 });
+  waitForList(0);
+}
+
+/* The playlist array isn't available the instant cuePlaylist returns. */
+function waitForList(tries){
+  if(!R.active || R.phase !== 'loading') return;
+  let items = null;
+  try{ items = player.getPlaylist(); }catch(e){}
+  if(items && items.length){
+    R.listLen = items.length;
+    playRandom();
+    return;
+  }
+  if(tries > 60){
+    $('trackName').textContent = 'couldn’t load that playlist — skipping';
+    setTimeout(() => beginGap(), 1500);
+    return;
+  }
+  setTimeout(() => waitForList(tries + 1), 200);
+}
+
+function playRandom(){
+  if(R.listLen === 0) return;
+  if(R.tried.size >= R.listLen){
+    $('trackName').textContent = 'no playable track in this playlist — skipping';
+    setTimeout(() => beginGap(), 1500);
+    return;
+  }
+  let idx;
+  do { idx = Math.floor(Math.random() * R.listLen); } while(R.tried.has(idx));
+  R.tried.add(idx);
+  player.setVolume(100);
+  player.playVideoAt(idx);
+}
+
+function onPlayerState(e){
+  if(!R.active) return;
+  if(e.data === YT.PlayerState.PLAYING){
+    if(R.phase === 'loading'){
+      R.phase = 'song';
+      R.endAt = Date.now() + cfg.songSec * 1000;
+      loop();
+    }
+    showTrackTitle();
+  }
+  // Track ended before the clock did — roll another one and keep going.
+  if(e.data === YT.PlayerState.ENDED && R.phase === 'song' && !R.paused){
+    const left = R.endAt - Date.now();
+    if(left > 2000) playRandom();
+    else endSong();
+  }
+}
+
+function onPlayerError(){
+  if(!R.active) return;
+  // Unplayable / embedding disabled — try a different track in the same list.
+  if(R.phase === 'loading' || R.phase === 'song') playRandom();
+}
+
+function showTrackTitle(){
+  try{
+    const d = player.getVideoData();
+    if(d && d.title) $('trackName').textContent = d.title;
+  }catch(e){}
+}
+
+function loop(){
+  if(!R.active || R.paused) return;
+  const left = R.endAt - Date.now();
+
+  if(R.phase === 'song'){
+    const total = cfg.songSec * 1000;
+    $('clock').textContent = fmt(left);
+    $('bar').style.width = Math.min(100, 100 * (1 - left/total)) + '%';
+    const fade = cfg.fadeSec * 1000;
+    if(fade > 0 && left <= fade){
+      $('clock').classList.add('fading');
+      try{ player.setVolume(Math.max(0, Math.round(100 * left / fade))); }catch(e){}
+    }
+    if(left <= 0){ endSong(); return; }
+
+  } else if(R.phase === 'gap'){
+    const total = cfg.gapSec * 1000;
+    $('clock').textContent = fmt(left);
+    $('bar').style.width = Math.min(100, 100 * (1 - left/total)) + '%';
+    const sec = Math.ceil(left/1000);
+    if(sec !== R.lastBeep && sec > 0){
+      R.lastBeep = sec;
+      beep(sec === 1);
+    }
+    if(left <= 0){ beginDance(R.i + 1); return; }
+  }
+  R.raf = requestAnimationFrame(loop);
+}
+
+function endSong(){
+  try{ player.stopVideo(); }catch(e){}
+  beginGap();
+}
+
+function beginGap(){
+  if(R.i + 1 >= R.queue.length){ finishRound(); return; }
+  if(cfg.gapSec <= 0){ beginDance(R.i + 1); return; }
+  R.phase = 'gap';
+  R.lastBeep = -1;
+  R.endAt = Date.now() + cfg.gapSec * 1000;
+  paintHeader(true);
+  $('clock').classList.remove('fading');
+  $('bar').style.width = '0%';
+  loop();
+}
+
+function finishRound(){
+  stopRound(true);
+  $('stageLbl').textContent = R.style ? R.style.name : '';
+  $('danceName').textContent = 'Done';
+  $('danceSub').textContent = '';
+  $('clock').textContent = '0:00';
+  $('trackName').textContent = '';
+  $('upNext').textContent = '';
+}
+
+function stopRound(keepScreen){
+  R.active = false; R.phase = 'idle'; R.paused = false;
+  if(R.raf) cancelAnimationFrame(R.raf);
+  try{ player.stopVideo(); }catch(e){}
+  try{ if(R.wake){ R.wake.release(); R.wake = null; } }catch(e){}
+  $('pauseBtn').textContent = 'Pause';
+  if(!keepScreen) show('home');
+}
+
+function paintHeader(isGap){
+  const item = R.queue[R.i];
+  const next = R.queue[R.i + 1];
+  $('stageLbl').textContent = R.style.name + ' · ' + (R.i + 1) + ' of ' + R.queue.length;
+  if(isGap){
+    $('danceName').textContent = next ? 'Next: ' + next.dance.name : 'Finishing';
+    $('danceSub').textContent = next ? next.dance.tempo + ' mpm' : '';
+    $('upNext').textContent = '';
+  }else{
+    $('danceName').textContent = item.dance.name;
+    $('danceSub').textContent = item.dance.tempo + ' mpm';
+    $('upNext').textContent = next ? 'up next · ' + next.dance.name : 'last dance';
+  }
+  renderPips();
+}
+
+function renderPips(){
+  $('pips').innerHTML = R.queue.map((q, n) =>
+    '<span class="pip ' + (n < R.i ? 'done' : n === R.i ? 'now' : '') + '"></span>'
+  ).join('');
+}
+
+/* ======================= controls ======================= */
+$('pauseBtn').onclick = () => {
+  if(!R.active) return;
+  if(R.paused){
+    R.paused = false;
+    R.endAt = Date.now() + R.pausedLeft;
+    if(R.phase === 'song'){ try{ player.playVideo(); }catch(e){} }
+    $('pauseBtn').textContent = 'Pause';
+    loop();
+  }else{
+    R.paused = true;
+    R.pausedLeft = Math.max(0, R.endAt - Date.now());
+    if(R.raf) cancelAnimationFrame(R.raf);
+    if(R.phase === 'song'){ try{ player.pauseVideo(); }catch(e){} }
+    $('pauseBtn').textContent = 'Resume';
+  }
+};
+$('rerollBtn').onclick = () => {
+  if(!R.active || R.phase !== 'song') return;
+  R.endAt = Date.now() + cfg.songSec * 1000;
+  $('clock').classList.remove('fading');
+  playRandom();
+};
+$('nextBtn').onclick = () => {
+  if(!R.active) return;
+  if(R.raf) cancelAnimationFrame(R.raf);
+  R.paused = false;
+  $('pauseBtn').textContent = 'Pause';
+  try{ player.stopVideo(); }catch(e){}
+  if(R.phase === 'gap') beginDance(R.i + 1); else beginGap();
+};
+$('stopBtn').onclick = () => stopRound(false);
+
+/* ======================= screens ======================= */
+function show(which){
+  // NB: must be an explicit 'block' — '' would fall back to the #round/#setup
+  // display:none rules in the stylesheet and show a blank page.
+  for(const id of ['home','round','setup']) $(id).style.display = (id === which) ? 'block' : 'none';
+  $('toSetup').style.display = (which === 'round') ? 'none' : '';
+  $('hdrsub').textContent = which === 'setup' ? 'setup' : 'practice music';
+}
+$('toSetup').onclick = () => { renderSetup(); show('setup'); };
+$('backBtn').onclick = () => { applyIo(); renderHome(); show('home'); };
+
+/* ======================= home rendering ======================= */
+function renderHome(){
+  // style cards
+  $('styleCards').innerHTML = STYLES.map(s =>
+    '<button class="style-card ' + (cfg.style === s.id ? 'on' : '') + '" data-style="' + s.id + '" style="--c:' + s.color + '">' +
+      '<span class="bar"></span>' +
+      '<div class="name">' + s.name + '</div>' +
+      '<div class="meta">' + s.dances.map(d => d.name).join(' · ') + '</div>' +
+    '</button>'
+  ).join('');
+  $('styleCards').querySelectorAll('[data-style]').forEach(el => {
+    el.onclick = () => { cfg.style = el.dataset.style; save(); renderHome(); };
+  });
+
+  // dance chips
+  const s = styleById(cfg.style);
+  $('danceChips').innerHTML = s.dances.map((d, idx) => {
+    const k = slotKey(s.id, d.id), sk = k + '#' + idx;
+    const off = !!cfg.skip[sk];
+    const missing = !parsePlaylistId(cfg.playlists[k]);
+    return '<button class="chip ' + (off ? 'off ' : '') + (!off && missing ? 'missing' : '') + '" data-skip="' + sk + '">' +
+      '<span class="dot"></span>' + d.name +
+      ' <span class="tempo">' + d.tempo + '</span></button>';
+  }).join('');
+  $('danceChips').querySelectorAll('[data-skip]').forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.skip;
+      cfg.skip[k] = !cfg.skip[k];
+      save(); renderHome();
+    };
+  });
+
+  const on = buildQueue(cfg.style);
+  $('danceCount').textContent = '(' + on.length + ' of ' + s.dances.length + ')';
+  const miss = on.filter(x => !x.listId);
+  $('missingWarn').style.display = miss.length ? '' : 'none';
+  if(miss.length) $('missingWarn').textContent =
+    'No playlist yet for: ' + miss.map(x => x.dance.name).join(', ');
+
+  // timing
+  document.querySelectorAll('.len').forEach(b => {
+    b.classList.toggle('on', +b.dataset.sec === cfg.songSec);
+  });
+  $('lenCustom').value = cfg.songSec;
+  $('gapSec').value = cfg.gapSec;
+  $('fadeSec').value = cfg.fadeSec;
+
+  const total = on.length * cfg.songSec + Math.max(0, on.length - 1) * cfg.gapSec;
+  $('roundSummary').textContent = on.length
+    ? on.length + ' dances · about ' + Math.round(total/60) + ' min'
+    : 'nothing selected';
+  $('startBtn').disabled = !on.length || !!miss.length;
+}
+
+document.querySelectorAll('.len').forEach(b => {
+  b.onclick = () => { cfg.songSec = +b.dataset.sec; save(); renderHome(); };
+});
+$('lenCustom').onchange = e => {
+  const v = Math.max(10, Math.min(600, +e.target.value || 90));
+  cfg.songSec = v; save(); renderHome();
+};
+$('gapSec').onchange = e => {
+  cfg.gapSec = Math.max(0, Math.min(120, +e.target.value || 0)); save(); renderHome();
+};
+$('fadeSec').onchange = e => {
+  cfg.fadeSec = Math.max(0, Math.min(30, +e.target.value || 0)); save(); renderHome();
+};
+$('startBtn').onclick = startRound;
+
+/* ======================= setup rendering ======================= */
+function renderSetup(){
+  $('setupList').innerHTML = STYLES.map(s =>
+    '<div class="setup-style" style="--c:' + s.color + '">' +
+      '<h3>' + s.name + '</h3>' +
+      s.dances.map(d => {
+        const k = slotKey(s.id, d.id);
+        const v = cfg.playlists[k] || '';
+        const ok = !!parsePlaylistId(v);
+        return '<div class="pl-row">' +
+          '<label for="pl-' + k + '">' + d.name +
+            '<span class="plname">' + slotLabel(s, d) + '</span></label>' +
+          '<input id="pl-' + k + '" type="text" spellcheck="false" ' +
+            'placeholder="paste playlist link" data-k="' + k + '" ' +
+            'class="' + (ok ? 'ok' : '') + '" value="' + v.replace(/"/g,'&quot;') + '">' +
+        '</div>';
+      }).join('') +
+    '</div>'
+  ).join('');
+  $('setupList').querySelectorAll('input[data-k]').forEach(el => {
+    el.oninput = () => {
+      cfg.playlists[el.dataset.k] = el.value.trim();
+      el.classList.toggle('ok', !!parsePlaylistId(el.value));
+      save();
+    };
+  });
+}
+$('ioToggle').onclick = () => {
+  const box = $('ioBox'), hint = $('ioHint');
+  const open = box.style.display !== 'block';
+  box.style.display = open ? 'block' : 'none';
+  hint.style.display = open ? 'block' : 'none';
+  if(open){ box.value = JSON.stringify(cfg, null, 2); box.select(); }
+};
+function applyIo(){
+  const box = $('ioBox');
+  if(box.style.display !== 'block') return;
+  try{
+    const o = JSON.parse(box.value);
+    if(o && typeof o === 'object'){ cfg = Object.assign({}, DEFAULTS, o); save(); }
+  }catch(e){}
+  box.style.display = 'none'; $('ioHint').style.display = 'none';
+}
+
+/* ======================= go ======================= */
+renderHome();
+show('home');
+
+/* exposed for the headless test harness */
+window.__rounds = { R, cfg, buildQueue, parsePlaylistId, STYLES, slotKey };
+</script>
+</body>
+</html>
