@@ -44,6 +44,7 @@
 
     --good:#2FBE5E;
     --bad:#E53535;
+    --bad-on-panel:#FF4040;  /* legible against the panel blue */
   }
   *{box-sizing:border-box}
   svg{shape-rendering:crispEdges}   /* every sprite here is pixel art */
@@ -69,7 +70,6 @@
   body[data-screen="round"] h1{font-size:46px;line-height:56px}
   body[data-screen="round"] header .spacer{display:none}
   h1{font-size:28px;margin:0;letter-spacing:.02em;line-height:34px}
-  header .sub{color:var(--mute);font-size:12px}
   header .spacer{flex:1}
 
   /* ---------- pixel chrome ---------- */
@@ -96,7 +96,7 @@
     padding:16px 18px;margin-bottom:22px;
   }
   .panel .hint,.panel .lbl,.panel .unit,.panel .plname{color:var(--on-panel)}
-  .panel .warn{color:#FFB3D9}
+  .panel .warn{color:var(--bad-on-panel)}
   .panel h2{
     font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.06em;
     margin:0 0 14px;color:var(--ink);text-transform:uppercase;
@@ -222,12 +222,7 @@
     );
   }
 
-  .ipod-wrap{position:relative;width:340px;max-width:94vw}
-  /* the little nub from the reference — outside the clipped body */
-  .nub{
-    position:absolute;top:-15px;right:38px;width:16px;height:19px;
-    background:var(--blue);border:4px solid var(--ink);border-bottom:none;
-  }
+  .ipod-wrap{position:relative;width:340px;max-width:100%}
   .ipod{
     position:relative;
     background:var(--ink);            /* the outline */
@@ -244,8 +239,8 @@
     padding:11px 13px 9px;
     height:var(--screen-h);display:flex;flex-direction:column;overflow:hidden;
   }
-  .dance-name,.dance-sub{text-transform:uppercase}
-  .sub,.plain-only{display:none}
+  .dance-name{text-transform:uppercase}
+  .plain-only{display:none}
   .style-card .bar{display:none}
   .scr-top{
     display:flex;justify-content:space-between;align-items:center;
@@ -261,11 +256,10 @@
     display:flex;align-items:center;justify-content:center;
     word-break:break-word;overflow:hidden;
   }
-  .dance-sub{font-size:10px;line-height:14px;height:14px;color:var(--pink);letter-spacing:.04em}
   .clock{
     font-family:"Press Start 2P",monospace;
     font-size:29px;line-height:36px;height:36px;color:var(--yellow);
-    margin:8px 0 6px;letter-spacing:.02em;
+    margin:15px 0 13px;letter-spacing:.02em;   /* keeps the 212px screen exact */
   }
   .clock.fading{color:#FF8FA8}
   .progress{height:8px;background:var(--screen-lt);border:2px solid #4E3C6E;overflow:hidden}
@@ -283,7 +277,7 @@
   .pip.now{background:var(--yellow)}
 
   /* ---- click wheel ---- */
-  .wheel{width:min(264px,74vw);aspect-ratio:1;margin:0 auto;background:var(--ink);padding:5px}
+  .wheel{width:264px;height:264px;margin:0 auto;background:var(--ink);padding:5px}
   .wheel-face{width:100%;height:100%;background:var(--blue);position:relative}
   .wbtn{
     position:absolute;font-family:"Press Start 2P",monospace;font-size:7px;
@@ -303,17 +297,17 @@
   .wbtn.right:active{transform:translateY(-50%) translateY(1px)}
   .wcenter{
     position:absolute;top:50%;left:50%;
-    width:36%;aspect-ratio:1;transform:translate(-50%,-50%);
+    width:96px;height:96px;margin:-48px 0 0 -48px;
     background:var(--ink);padding:4px;
   }
   .wcenter-face{
     width:100%;height:100%;background:var(--purple);
     font-family:"Press Start 2P",monospace;font-size:7px;color:#fff;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:6px;line-height:1.5;
+    gap:5px;line-height:1.5;   /* keeps the stack an even height to centre */
   }
   .wcenter:hover .wcenter-face{background:var(--purple-lt)}
-  .wcenter:active{transform:translate(calc(-50% + 1px),calc(-50% + 1px))}
+  .wcenter:active{transform:translate(1px,1px)}
 
   .ipod-foot{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10px}
   .player-wrap{width:300px;max-width:94vw}
@@ -322,6 +316,7 @@
     letter-spacing:.08em;margin-bottom:7px;text-align:center;text-transform:uppercase;
   }
   #yt,#yt2{border:3px solid var(--ink);background:#000;min-height:200px;display:block}
+  #yt iframe,#yt2 iframe{display:block;margin:0 auto;max-width:100%}
 
   /* ---------- setup ---------- */
   #setup{display:none}
@@ -340,6 +335,20 @@
     color:var(--ink);padding:10px;font:11.5px/1.6 "Silkscreen",monospace;
     margin-top:14px;display:none;
   }
+
+  #flags{display:none}
+  #toFlags,#flagBtn{display:none}
+  body.flagmode[data-screen="home"] #toFlags{display:inline-flex}
+  body.flagmode[data-screen="round"] #flagBtn{display:inline-flex}
+  .flag-row{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:3px solid #8FC4E8}
+  .flag-row:last-child{border-bottom:none}
+  .fl-main{flex:1;min-width:0}
+  .fl-main a{color:var(--ink)}
+  .fl-sub{color:var(--on-panel);margin-top:2px}
+  .fl-del{flex:none}
+  body.plain .flag-row{border-bottom:1px solid var(--line)}
+  body.plain .fl-main a{color:var(--ink)}
+  body.plain .fl-sub{color:var(--mute);font-size:12.5px}
 
   /* ---------- playlist check ---------- */
   #check{display:none}
@@ -369,6 +378,54 @@
   .plain-only{display:none}
 
   /* ======================================================================
+     WHOLE-PIXEL TYPE
+     A pixel font only looks right when its glyph edges land on device
+     pixels. Ratio line-heights (1.7 x 11.5px = 19.55) and half-pixel font
+     sizes push them onto fractions, and a fractional edge renders as a
+     faint half-strength row along the top of the letters. So: integer
+     sizes, integer line boxes, everywhere the pixel fonts are used. None of
+     it applies to the plain theme, which wants its own proportional type.
+     ====================================================================== */
+  body:not(.plain){line-height:24px}
+  body:not(.plain) .hint,
+  body:not(.plain) .warn{font-size:12px;line-height:20px}
+  body:not(.plain) .btn{font-size:13px;line-height:22px}
+  body:not(.plain) .btn.lg{font-size:16px;line-height:28px}
+  body:not(.plain) .panel h2{font-size:10px;line-height:18px}
+  body:not(.plain) .style-card .name{font-size:12px;line-height:20px}
+  body:not(.plain) .style-card .meta{font-size:11px;line-height:18px}
+  body:not(.plain) .chip{font-size:13px;line-height:22px}
+  body:not(.plain) .chip .tempo{font-size:11px;line-height:18px}
+  body:not(.plain) .lenrow{font-size:12px;line-height:20px}
+  body:not(.plain) .lenrow .lbl,
+  body:not(.plain) .lenrow .unit{font-size:12px;line-height:20px}
+  body:not(.plain) .len{font-size:13px;line-height:22px}
+  body:not(.plain) input[type=number],
+  body:not(.plain) input[type=text]{font-size:13px;line-height:20px}
+  body:not(.plain) textarea{font-size:11px;line-height:18px}
+  body:not(.plain) .banner{font-size:12px;line-height:20px}
+  body:not(.plain) .banner b{font-size:10px;line-height:18px}
+  body:not(.plain) .banner code{font-size:11px;line-height:18px}
+  body:not(.plain) .pl-row label{font-size:12px;line-height:20px}
+  body:not(.plain) .pl-row label .plname{font-size:11px;line-height:18px}
+  body:not(.plain) .setup-style h3{font-size:10px;line-height:18px}
+  body:not(.plain) .chk-head .t{font-size:9px;line-height:16px}
+  body:not(.plain) .chk-head .h{font-size:13px;line-height:22px}
+  body:not(.plain) .chk-row{font-size:12px;line-height:20px}
+  body:not(.plain) .chk-row .st{font-size:9px;line-height:16px}
+  body:not(.plain) .chk-row .nm{font-size:12px;line-height:20px}
+  body:not(.plain) .chk-row .msg{font-size:11px;line-height:18px}
+  body:not(.plain) .scr-top{font-size:7px;line-height:12px}
+  body:not(.plain) .wbtn,
+  body:not(.plain) .wcenter-face{font-size:7px;line-height:12px}
+  body:not(.plain) .player-wrap .cap{font-size:7px;line-height:12px}
+  body:not(.plain) .track{font-size:10px;line-height:15px}
+  body:not(.plain) .upnext{font-size:10px;line-height:14px}
+  body:not(.plain) .fun-toggle{font-size:11px;line-height:18px}
+  body:not(.plain) .flag-row{font-size:12px;line-height:20px}
+  body:not(.plain) .fl-sub{font-size:11px;line-height:18px}
+
+  /* ======================================================================
      "I HATE FUN" — the look this started as, restored from the first commit
      rather than from memory. It is an override layer keyed off one class on
      <body>, so both themes share the markup: the iPod's nested boxes flatten
@@ -388,15 +445,13 @@
   body.plain svg{shape-rendering:auto}
   body.plain .plain-only{display:inline}
   body.plain .pixel-only,body.plain .fun-toggle .skull{display:none}
-  body.plain .sub{display:inline;color:var(--mute);font-size:13px}
-  body.plain .dance-name,body.plain .dance-sub,
-  body.plain .track,body.plain .upnext{text-transform:none}
+  body.plain .dance-name,body.plain .track,body.plain .upnext{text-transform:none}
 
   body.plain .wrap{max-width:860px;padding:16px 16px 48px}
   body.plain header{align-items:baseline;gap:12px;margin:8px 0 22px;justify-content:flex-start}
   body.plain header .spacer{display:block}
   body.plain h1,body.plain[data-screen="round"] h1{
-    font-size:20px;line-height:1.5;letter-spacing:.14em;
+    font-size:26px;line-height:34px;letter-spacing:.14em;
     text-transform:uppercase;font-weight:600;
   }
 
@@ -497,7 +552,7 @@
   body.plain .banner code{background:#140f10;border:1px solid #58343a;border-radius:6px;color:#9BE8A8}
 
   /* ---- the iPod flattens back to centred text ---- */
-  body.plain .nub,body.plain .scr-ico{display:none}
+  body.plain .scr-ico{display:none}
   body.plain #round{text-align:center;padding-top:10px}
   body.plain .ipod-wrap{width:100%;max-width:none}
   body.plain .ipod,body.plain .ipod-face,
@@ -506,7 +561,7 @@
   }
   body.plain .notched,body.plain .px-circle,body.plain .px-circle-sm{clip-path:none}
   body.plain .screen-face{display:block;height:auto;overflow:visible}
-  body.plain .scr-top,body.plain .dance-sub,body.plain .clock,
+  body.plain .scr-top,body.plain .clock,
   body.plain .track,body.plain .upnext,body.plain .pips{height:auto}
   body.plain .dance-name{height:auto;display:block;overflow:visible}
   body.plain .scr-top{
@@ -517,10 +572,8 @@
     font-size:clamp(38px,11vw,72px);font-weight:600;letter-spacing:-.01em;
     color:var(--ink);margin:6px 0 2px;line-height:1.05;
   }
-  body.plain .dance-sub{line-height:1.5}
   body.plain .track{line-height:1.5}
   body.plain .upnext{line-height:1.5}
-  body.plain .dance-sub{color:var(--mute);font-size:13.5px;min-height:20px;letter-spacing:0}
   body.plain .clock{
     font-size:clamp(52px,16vw,96px);font-weight:300;font-variant-numeric:tabular-nums;
     letter-spacing:.01em;margin:16px 0 4px;line-height:1;color:var(--ink);
@@ -596,6 +649,14 @@
     .dance-name{font-size:14px;line-height:20px}
     .clock{font-size:24px}
     body[data-screen="round"] h1{font-size:32px;line-height:40px}
+    .ipod-wrap{width:304px}
+    .wheel{width:240px;height:240px}
+    .wcenter{width:88px;height:88px;margin:-44px 0 0 -44px}
+  }
+  @media (max-width:360px){
+    .ipod-wrap{width:288px}
+    .wheel{width:224px;height:224px}
+    .wcenter{width:80px;height:80px;margin:-40px 0 0 -40px}
   }
   @media (max-width:620px){
     .pl-row{grid-template-columns:1fr;gap:4px}
@@ -665,8 +726,8 @@
 
   <header>
     <h1 class="pixel">ROUNDS</h1>
-    <span class="sub" id="hdrsub">practice music</span>
     <span class="spacer"></span>
+    <button class="btn" id="toFlags">Flagged</button>
     <button class="btn primary" id="toSetup">Playlists</button>
   </header>
 
@@ -720,7 +781,6 @@
   <section id="round">
     <div class="ipod-stage">
      <div class="ipod-wrap">
-      <span class="nub"></span>
       <div class="ipod notched">
        <div class="ipod-face notched">
         <div class="screen notched">
@@ -731,7 +791,6 @@
           </div>
           <div class="scr-mid">
             <div class="dance-name" id="danceName">CHA CHA</div>
-            <div class="dance-sub" id="danceSub"></div>
             <div class="clock pixel" id="clock">1:30</div>
             <div class="progress"><i id="bar"></i></div>
           </div>
@@ -774,6 +833,7 @@
      </div>
 
       <div class="ipod-foot">
+        <button class="btn" id="flagBtn"><span id="flagLabel">Flag this song</span></button>
         <div class="player-wrap">
           <div class="cap">Now playing</div>
           <div id="yt"></div>
@@ -802,6 +862,20 @@
       <div class="hint" id="ioHint" style="display:none">
         Copy this to move your setup to another device, or paste one in and press Done.
       </div>
+    </div>
+  </section>
+
+  <!-- ============ FLAGGED ============ -->
+  <section id="flags">
+    <div class="panel">
+      <h2>Flagged <span id="flagCount"></span></h2>
+      <div id="flagList"></div>
+      <div class="io">
+        <button class="btn" id="flagCopy">Copy list</button>
+        <button class="btn" id="flagClear">Clear all</button>
+        <button class="btn primary" id="flagBack">Done</button>
+      </div>
+      <textarea id="flagBox" spellcheck="false"></textarea>
     </div>
   </section>
 
@@ -897,7 +971,8 @@ const DEFAULT_PLAYLISTS = {
 };
 
 const STORE = 'rounds.v1';
-const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{}, plain:false, checked:{} };
+const DEFAULTS = { songSec:90, gapSec:10, fadeSec:5, style:'latin', playlists:{}, skip:{}, plain:false, checked:{},
+                   flags:[], flagMode:false };
 let cfg = load();
 
 function load(){
@@ -910,6 +985,7 @@ function load(){
   // user cleared is stored as '', so it stays cleared.
   c.playlists = Object.assign({}, DEFAULT_PLAYLISTS, c.playlists || {});
   c.checked = c.checked || {};
+  c.flags = c.flags || [];
   return c;
 }
 function save(){
@@ -1208,7 +1284,6 @@ function finishRound(){
   stopRound(true);
   $('stageLbl').textContent = R.style ? R.style.name : '';
   $('danceName').textContent = 'Done';
-  $('danceSub').textContent = 'nice round';
   $('clock').textContent = '0:00';
   $('trackName').textContent = '';
   $('upNext').textContent = '';
@@ -1231,11 +1306,9 @@ function paintHeader(isGap){
   $('stageLbl').textContent = R.style.name + ' · ' + (R.i + 1) + ' of ' + R.queue.length;
   if(isGap){
     $('danceName').textContent = next ? 'Next: ' + next.dance.name : 'Finishing';
-    $('danceSub').textContent = next ? next.dance.tempo + ' mpm' : '';
     $('upNext').textContent = '';
   }else{
     $('danceName').textContent = item.dance.name;
-    $('danceSub').textContent = item.dance.tempo + ' mpm';
     $('upNext').textContent = next ? 'up next · ' + next.dance.name : 'last dance';
   }
   renderPips();
@@ -1295,10 +1368,8 @@ $('stopBtn').onclick = () => stopRound(false);
 function show(which){
   // NB: must be an explicit 'block' — '' would fall back to the #round/#setup
   // display:none rules in the stylesheet and show a blank page.
-  for(const id of ['home','round','setup','check']) $(id).style.display = (id === which) ? 'block' : 'none';
+  for(const id of ['home','round','setup','check','flags']) $(id).style.display = (id === which) ? 'block' : 'none';
   $('toSetup').style.display = (which === 'home') ? '' : 'none';
-  $('hdrsub').textContent = which === 'setup' ? 'setup'
-                          : which === 'check' ? 'checking' : 'practice music';
   $('fileBanner').style.display = (isFile && (which === 'home' || which === 'setup')) ? 'block' : 'none';
   // hearts and sparkles belong to the iPod screen only
   document.body.dataset.screen = which;
@@ -1343,8 +1414,8 @@ function renderHome(){
   const bad  = on.filter(slotBroken);
   const notes = [];
   if(miss.length) notes.push('No playlist yet for: ' + miss.map(x => x.dance.name).join(', '));
-  if(bad.length)  notes.push('Nothing plays in: ' + bad.map(x => x.dance.name).join(', ')
-                             + ' — fix it under Playlists.');
+  if(bad.length)  notes.push('Playlist empty, please add tracks: '
+                             + bad.map(x => x.dance.name).join(', '));
   $('missingWarn').style.display = notes.length ? '' : 'none';
   $('missingWarn').textContent = notes.join('  ');
 
@@ -1495,7 +1566,7 @@ function nextSlot(){
     p2.cuePlaylist({ list:chk.slots[chk.i].id, listType:'playlist', index:0 });
   }catch(e){ settle(false, 'player wouldn’t take that playlist'); return; }
   chk.loadTimer = setTimeout(
-    () => settle(false, 'no tracks — empty, private or deleted'), 6000);
+    () => settle(false, 'playlist empty, please add tracks'), 6000);
   waitList2(0, chk.i);
 }
 
@@ -1564,6 +1635,86 @@ function renderChk(){
   }).join('');
 }
 
+/* ======================= flagging =======================
+   Marks the song that's playing, with the playlist it came from, so the
+   playlists can be tidied up afterwards. Off by default; typing the word
+   "flag" anywhere outside a text field shows the controls, typing it again
+   hides them. The list lives in local storage with the rest of the config. */
+const FLAG_WORD = 'flag', FLAG_IDLE = 'Flag this song';
+let keyBuf = '';
+const esc = t => String(t).replace(/[&<>"]/g,
+  c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+  if(e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1) return;
+  keyBuf = (keyBuf + e.key.toLowerCase()).slice(-FLAG_WORD.length);
+  if(keyBuf === FLAG_WORD){ keyBuf = ''; setFlagMode(!cfg.flagMode); }
+});
+
+function setFlagMode(on){
+  cfg.flagMode = !!on; save();
+  document.body.classList.toggle('flagmode', !!on);
+  if(!on && document.body.dataset.screen === 'flags') show('home');
+}
+
+function flagCurrent(){
+  const item = R.active && R.queue[R.i];
+  let d = null;
+  try{ d = player.getVideoData(); }catch(e){}
+  if(!item || !d || !d.video_id) return;
+  const dup = cfg.flags.some(f => f.videoId === d.video_id && f.key === item.key);
+  if(!dup){
+    cfg.flags.unshift({
+      at: Date.now(), style: R.style.name, dance: item.dance.name,
+      key: item.key, listId: item.listId,
+      videoId: d.video_id, title: d.title || d.video_id,
+    });
+    save();
+  }
+  const l = $('flagLabel');
+  l.textContent = dup ? 'already flagged' : 'flagged';
+  setTimeout(() => { l.textContent = FLAG_IDLE; }, 1100);
+}
+
+function renderFlags(){
+  const list = cfg.flags || [];
+  $('flagCount').textContent = list.length ? '(' + list.length + ')' : '';
+  $('flagList').innerHTML = list.length ? list.map((f, i) =>
+    '<div class="flag-row">' +
+      '<div class="fl-main">' +
+        '<a href="https://www.youtube.com/watch?v=' + encodeURIComponent(f.videoId) +
+          '" target="_blank" rel="noreferrer">' + esc(f.title) + '</a>' +
+        '<div class="fl-sub">' + esc(f.style) + ' / ' + esc(f.dance) +
+          (f.listId ? ' · <a href="https://music.youtube.com/playlist?list=' +
+            encodeURIComponent(f.listId) + '" target="_blank" rel="noreferrer">playlist</a>' : '') +
+        '</div>' +
+      '</div>' +
+      '<button class="btn fl-del" data-i="' + i + '">remove</button>' +
+    '</div>').join('')
+    : '<div class="hint" style="margin:0">Nothing flagged yet.</div>';
+  $('flagList').querySelectorAll('[data-i]').forEach(el => {
+    el.onclick = () => { cfg.flags.splice(+el.dataset.i, 1); save(); renderFlags(); };
+  });
+}
+
+$('flagBtn').onclick = flagCurrent;
+$('toFlags').onclick = () => { renderFlags(); show('flags'); };
+$('flagBack').onclick = () => { $('flagBox').style.display = 'none'; show('home'); };
+$('flagClear').onclick = () => { cfg.flags = []; save(); renderFlags(); };
+$('flagCopy').onclick = () => {
+  const box = $('flagBox');
+  const open = box.style.display !== 'block';
+  box.style.display = open ? 'block' : 'none';
+  if(open){
+    box.value = (cfg.flags || []).map(f =>
+      f.style + ' / ' + f.dance + ' — ' + f.title +
+      '  https://www.youtube.com/watch?v=' + f.videoId).join('\n');
+    box.select();
+  }
+};
+
 /* ======================= i hate fun =======================
    Flips the whole page back to the plain look this started as. Nothing but
    a class on <body>; every rule lives under body.plain in the stylesheet. */
@@ -1579,6 +1730,7 @@ $('funToggle').onclick = () => setPlain(!document.body.classList.contains('plain
 
 /* ======================= go ======================= */
 setPlain(cfg.plain);
+setFlagMode(cfg.flagMode);
 renderHome();
 show('home');
 
