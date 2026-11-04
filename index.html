@@ -44,7 +44,7 @@
 
     --good:#2FBE5E;
     --bad:#E53535;
-    --bad-on-panel:#FF4040;  /* legible against the panel blue */
+    --bad-on-panel:#5A0028;  /* deep berry — 4.8:1 on the panel blue */
   }
   *{box-sizing:border-box}
   svg{shape-rendering:crispEdges}   /* every sprite here is pixel art */
@@ -96,6 +96,8 @@
     padding:16px 18px;margin-bottom:22px;
   }
   .panel .hint,.panel .lbl,.panel .unit,.panel .plname{color:var(--on-panel)}
+  /* Red sits at about 1.4:1 on the panel blue and a light pink at 2.3 —
+     both unreadable. Only a dark colour clears the bar here. */
   .panel .warn{color:var(--bad-on-panel)}
   .panel h2{
     font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.06em;
