@@ -1424,7 +1424,8 @@ function startCheck(){
     if(id) slots.push({ label:s.name + ' / ' + d.name, id, k });
   }));
   if(!slots.length) return;
-  chk = { slots, i:-1, res:[], settled:true, timer:null, tries:0, len:0 };
+  chk = { slots, i:-1, res:[], settled:true, tries:0, len:0,
+          probing:false, loadTimer:null, playTimer:null };
   $('chkStage').textContent = 'checking playlists';   // reset after a previous run
   show('check');
   renderChk();
@@ -1439,46 +1440,61 @@ function startCheck(){
     playerVars: playerVars(),
     events:{
       onReady: () => nextSlot(),
-      onStateChange: e => { if(e.data === YT.PlayerState.PLAYING) settle(true); },
+      onStateChange: e => {
+        if(e.data === YT.PlayerState.PLAYING && chk && chk.probing) settle(true);
+      },
       onError: e => onCheckError(e && e.data),
     }
   });
 }
 
 function stopCheck(){
-  if(chk && chk.timer) clearTimeout(chk.timer);
+  clearChkTimers();
   chk = null;
   try{ if(p2) p2.stopVideo(); }catch(e){}
 }
 
+function clearChkTimers(){
+  if(!chk) return;
+  clearTimeout(chk.loadTimer); clearTimeout(chk.playTimer);
+  chk.loadTimer = chk.playTimer = null;
+}
+
+/* Each slot runs in two stages. 'loading' waits for the track list to turn
+   up; 'probing' has asked for a track and waits to hear it start. Each
+   stage owns its own deadline, so an empty playlist is called in six
+   seconds rather than hanging about. */
 function nextSlot(){
   if(!chk) return;
-  if(chk.timer) clearTimeout(chk.timer);
+  clearChkTimers();
   chk.i++;
   if(chk.i >= chk.slots.length){ finishCheck(); return; }
-  chk.settled = false; chk.tries = 0; chk.len = 0;
+  chk.settled = false; chk.tries = 0; chk.len = 0; chk.probing = false;
   $('chkHead').textContent = chk.slots[chk.i].label;
   renderChk();
   try{
     p2.setVolume(10);
     p2.cuePlaylist({ list:chk.slots[chk.i].id, listType:'playlist', index:0 });
-  }catch(e){}
-  waitList2(0);
-  chk.timer = setTimeout(() =>
-    settle(false, chk.len ? 'no track would play' : 'playlist wouldn’t load — is it private?'), 14000);
+  }catch(e){ settle(false, 'player wouldn’t take that playlist'); return; }
+  chk.loadTimer = setTimeout(
+    () => settle(false, 'no tracks — empty, private or deleted'), 6000);
+  waitList2(0, chk.i);
 }
 
-function waitList2(n){
-  if(!chk || chk.settled) return;
+function waitList2(n, gen){
+  // bail if this slot is done, already playing, or we've moved on
+  if(!chk || chk.settled || chk.probing || chk.i !== gen) return;
   let items = null;
   try{ items = p2.getPlaylist(); }catch(e){}
   if(items && items.length){
+    clearTimeout(chk.loadTimer); chk.loadTimer = null;
     chk.len = items.length;
-    try{ p2.playVideoAt(0); }catch(e){}
+    chk.probing = true;
+    chk.playTimer = setTimeout(() => settle(false, 'no track would play'), 8000);
+    try{ p2.playVideoAt(0); }catch(e){ settle(false, 'player error'); }
     return;
   }
-  if(n > 50) return;             // let the timeout report it
-  setTimeout(() => waitList2(n + 1), 200);
+  setTimeout(() => waitList2(n + 1, gen), 150);   // loadTimer ends this
 }
 
 function onCheckError(code){
@@ -1496,7 +1512,8 @@ function onCheckError(code){
 function settle(ok, msg){
   if(!chk || chk.settled) return;
   chk.settled = true;
-  if(chk.timer) clearTimeout(chk.timer);
+  chk.probing = false;
+  clearChkTimers();
   chk.res[chk.i] = { ok, msg: ok ? chk.len + ' tracks' : (msg || 'failed') };
   cfg.checked[chk.slots[chk.i].k] = { ok: !!ok, n: chk.len, msg: chk.res[chk.i].msg };
   save();
@@ -1511,7 +1528,7 @@ function finishCheck(){
   $('chkHead').textContent = bad
     ? bad + ' of ' + chk.slots.length + ' need a look'
     : 'all ' + chk.slots.length + ' playlists play';
-  if(chk.timer) clearTimeout(chk.timer);
+  clearChkTimers();
   chk.i = -1;
   renderChk();
 }
